@@ -55,6 +55,9 @@ interface PixDao {
     @Query("SELECT * FROM pixcategoryentity WHERE listId = :listId")
     fun getCategoriesForList(listId: Long): Flow<List<PixCategoryEntity>>
 
+    @Query("SELECT * FROM pixcategoryentity")
+    fun getAllCategories(): Flow<List<PixCategoryEntity>>
+
     @Query("SELECT COUNT(*) FROM pixcategoryentity WHERE listId = :listId")
     suspend fun getCategoryCountForList(listId: Long): Int
 
@@ -73,6 +76,9 @@ interface PixDao {
 
     @Query("DELETE FROM pixcolorentity WHERE id = :colorId")
     suspend fun deleteColorById(colorId: Long)
+
+    @Query("DELETE FROM pixcolorentity WHERE id NOT IN (SELECT DISTINCT colorId FROM pixcategoryentity)")
+    suspend fun deleteUnusedColors(): Int
 
     @Query("SELECT * FROM pixcolorentity WHERE id = :colorId")
     fun getColor(colorId: Long): Flow<PixColorEntity>

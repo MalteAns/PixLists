@@ -79,7 +79,7 @@ class ListViewModel(
 
         viewModelScope.launch {
             _state.update{ state -> state.copy(
-                invalideNames = repository.getAllPixLists().first()
+                invalideNames = repository.getAllPixListsWithoutData().first()
                     .map { it.name },
                 colorList = repository.getAllColors().first()
             ) }
@@ -90,7 +90,7 @@ class ListViewModel(
         viewModelScope.launch {
             repository.renameList(_curPixListId.value!!, newName)
             _state.value = _state.value.copy(
-                invalideNames = repository.getAllPixLists().first().map { it.name },
+                invalideNames = repository.getAllPixListsWithoutData().first().map { it.name },
             )
         }
     }

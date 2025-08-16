@@ -5,8 +5,8 @@ import de.malteans.pixlists.data.database.entities.PixCategoryEntity
 import de.malteans.pixlists.data.database.entities.PixColorEntity
 import de.malteans.pixlists.data.database.entities.PixEntryEntity
 import de.malteans.pixlists.data.database.entities.PixListEntity
+import de.malteans.pixlists.data.mappers.toDomain
 import de.malteans.pixlists.data.mappers.toPixCategory
-import de.malteans.pixlists.data.mappers.toPixColor
 import de.malteans.pixlists.data.mappers.toPixList
 import de.malteans.pixlists.domain.PixColor
 import de.malteans.pixlists.domain.PixList
@@ -33,7 +33,7 @@ class DefaultPixRepository(
         dao.renameList(listId, newName)
     }
 
-    override fun getAllPixLists(): Flow<List<PixList>> {
+    override fun getAllPixListsWithoutData(): Flow<List<PixList>> {
         return dao.getAllLists().map { allLists ->
             allLists.map { listEntity ->
                 listEntity.toPixList()
@@ -48,7 +48,7 @@ class DefaultPixRepository(
             dao.getCategoriesForList(listId),
             dao.getEntriesForList(listId)
         ) { listEntity, colors, categories, entries ->
-            val colorsMap = colors.associate { it.id to it.toPixColor() }
+            val colorsMap = colors.associate { it.id to it.toDomain() }
             val mappedCategories = categories.associate { categoryEntity ->
                 categoryEntity.id to categoryEntity.toPixCategory(colorsMap[categoryEntity.colorId])
             }
@@ -94,8 +94,12 @@ class DefaultPixRepository(
         return dao.upsertColor(PixColorEntity(name = name, red = red, green = green, blue = blue))
     }
 
-    override suspend fun deleteColor(colorId: Long) {
+    override suspend fun deleteColorById(colorId: Long) {
         dao.deleteColorById(colorId)
+    }
+
+    override suspend fun deleteUnusedColors(): Int {
+        return dao.deleteUnusedColors()
     }
 
     override suspend fun renameColor(colorId: Long, newName: String) {
@@ -108,7 +112,21 @@ class DefaultPixRepository(
 
     override fun getAllColors(): Flow<List<PixColor>> {
         return dao.getAllColors().map { list ->
-            list.map { it.toPixColor() }
+            list.map { it.toDomain() }
+        }
+    }
+
+    override fun getAllColorsWithUses(): Flow<Map<PixColor, Int>> {
+        return combine(
+            dao.getAllColors(),
+            dao.getAllCategories(),
+        ) { allColors, allCategories ->
+            allColors.associate { color ->
+                color.toDomain() to
+                allCategories.count { category ->
+                    category.colorId == color.id
+                }
+            }
         }
     }
 

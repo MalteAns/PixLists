@@ -12,7 +12,7 @@ interface PixRepository {
 
     suspend fun renameList(listId: Long, newName: String)
 
-    fun getAllPixLists(): Flow<List<PixList>>
+    fun getAllPixListsWithoutData(): Flow<List<PixList>>
 
     fun getCurrentPixList(listId: Long): Flow<PixList?>
 
@@ -30,13 +30,17 @@ interface PixRepository {
     // Color Operations --------------------------------------------------
     suspend fun createColor(name: String, red: Float, green: Float, blue: Float): Long
 
-    suspend fun deleteColor(colorId: Long)
+    suspend fun deleteColorById(colorId: Long)
+
+    suspend fun deleteUnusedColors(): Int
 
     suspend fun renameColor(colorId: Long, newName: String)
 
     suspend fun changeColor(colorId: Long, newRed: Float, newGreen: Float, newBlue: Float)
 
     fun getAllColors(): Flow<List<PixColor>>
+
+    fun getAllColorsWithUses(): Flow<Map<PixColor, Int>>
 
     // Entry Operations --------------------------------------------------
     suspend fun createEntry(listId: Long, categoryId: Long, date: LocalDate): Long

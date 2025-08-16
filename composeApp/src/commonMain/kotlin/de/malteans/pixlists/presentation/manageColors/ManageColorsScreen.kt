@@ -37,18 +37,30 @@ import pixlists.composeapp.generated.resources.delete_unused_colors
 import pixlists.composeapp.generated.resources.delete_unused_colors_desc
 import pixlists.composeapp.generated.resources.manage_colors
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ManageColorsScreen(
+fun ManageColorsScreenRoot(
     viewModel: ManageColorsViewModel = koinViewModel(),
     openDrawer: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-//    BackHandler {
-//        viewModel.undo()
-//    }
+    ManageColorsScreen(
+        state = state,
+        onAction = { action ->
+            when (action) {
+                is ManageColorsAction.OpenDrawer -> openDrawer()
+                else -> viewModel.onAction(action)
+            }
+        }
+    )
+}
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ManageColorsScreen(
+    state: ManageColorsState,
+    onAction: (ManageColorsAction) -> Unit,
+) {
     var showColorDialog by remember { mutableStateOf(false) }
     var colorToEdit by remember { mutableStateOf<PixColor?>(null) }
 
@@ -60,22 +72,28 @@ fun ManageColorsScreen(
             },
             onFinish = { newName, newRgb, isEdit ->
                 if (isEdit) {
-                    viewModel.updateColor(colorToEdit!!, newName, newRgb)
+                    onAction(
+                        ManageColorsAction.UpdateColor(
+                            colorToEdit = colorToEdit!!,
+                            newName = newName!!,
+                            newRgb = newRgb!!
+                        )
+                    )
                 } else {
-                    viewModel.addColor(
-                        name = newName!!,
-                        red = newRgb!![0],
-                        green = newRgb[1],
-                        blue = newRgb[2]
+                    onAction(
+                        ManageColorsAction.AddColor(
+                            name = newName!!,
+                            red = newRgb!![0],
+                            green = newRgb[1],
+                            blue = newRgb[2]
+                        )
                     )
                 }
                 showColorDialog = false
                 colorToEdit = null
             },
             onDelete = {
-                colorToEdit?.let {
-                    viewModel.deleteColor(it)
-                }
+                colorToEdit?.let { onAction(ManageColorsAction.DeleteColor(it)) }
                 showColorDialog = false
                 colorToEdit = null
             },
@@ -89,13 +107,11 @@ fun ManageColorsScreen(
 
     if (showDeleteUnusedDialog) {
         CustomDialog(
-            onDismissRequest = {
-                showDeleteUnusedDialog = false
-            },
+            onDismissRequest = { showDeleteUnusedDialog = false },
             title = {
                 Text(
                     text = stringResource(Res.string.delete_unused_colors),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge
                 )
             },
             leftIcon = {
@@ -114,7 +130,7 @@ fun ManageColorsScreen(
                     contentDescription = "Delete",
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.clickable {
-                        viewModel.deleteUnusedColors()
+                        onAction(ManageColorsAction.DeleteUnusedColors)
                         showDeleteUnusedDialog = false
                     }
                 )
@@ -124,33 +140,25 @@ fun ManageColorsScreen(
                 text = stringResource(Res.string.delete_unused_colors_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .padding(top = 16.dp)
+                modifier = Modifier.padding(top = 16.dp)
             )
         }
     }
 
-    Scaffold (
+    Scaffold(
         topBar = {
             CustomTopBar(
-                title = { Text(
-                    text = stringResource(Res.string.manage_colors),
-                    modifier = Modifier
-                        .combinedClickable (
-                            onClick = {
-                                showDeleteUnusedDialog = true
-                            },
-                            onLongClick = {
-                                viewModel.loadDefaultColors()
-                            }
+                title = {
+                    Text(
+                        text = stringResource(Res.string.manage_colors),
+                        modifier = Modifier.combinedClickable(
+                            onClick = { showDeleteUnusedDialog = true },
+                            onLongClick = { onAction(ManageColorsAction.LoadDefaultColors) }
                         )
-                ) },
+                    )
+                },
                 actions = {
-                    IconButton(
-                        onClick = {
-                            showColorDialog = true
-                        }
-                    ) {
+                    IconButton(onClick = { showColorDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.AddCircle,
                             contentDescription = "Add Color",
@@ -158,7 +166,7 @@ fun ManageColorsScreen(
                         )
                     }
                 },
-                openDrawer = openDrawer
+                openDrawer = { onAction(ManageColorsAction.OpenDrawer) }
             )
         }
     ) { pad ->
@@ -167,12 +175,7 @@ fun ManageColorsScreen(
                 .padding(pad)
                 .fillMaxSize()
         ) {
-            // TODO: Search bar
-
-            LazyColumn (
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(state.colorList) { color ->
                     ColorItem(
                         color = color,

@@ -10,7 +10,7 @@ import androidx.navigation.toRoute
 import de.malteans.pixlists.app.Route
 import de.malteans.pixlists.presentation.list.ListScreenRoot
 import de.malteans.pixlists.presentation.list.LoadingScreen
-import de.malteans.pixlists.presentation.manageColors.ManageColorsScreen
+import de.malteans.pixlists.presentation.manageColors.ManageColorsScreenRoot
 
 @Composable
 fun NavGraph(
@@ -41,8 +41,8 @@ fun NavGraph(
         composable<Route.ManageColorsScreen> {
             setCurScreen(Screen.MANAGE_COLORS)
             setPixListId(null)
-            ManageColorsScreen(
-                openDrawer = openDrawer,
+            ManageColorsScreenRoot(
+                openDrawer = openDrawer
             )
         }
         // Loading Screen

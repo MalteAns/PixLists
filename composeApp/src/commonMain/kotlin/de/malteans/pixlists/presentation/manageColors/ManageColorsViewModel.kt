@@ -7,7 +7,6 @@ import de.malteans.pixlists.domain.PixRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -15,41 +14,33 @@ class ManageColorsViewModel(
     private val repository: PixRepository
 ): ViewModel() {
 
-    private val _allPixLists = repository
-        .getAllPixLists()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    private val _colorList = repository
-        .getAllColors()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = emptyList()
-        )
+    private val _colorsWithUses = repository
+        .getAllColorsWithUses()
 
     private val _state = MutableStateFlow(ManageColorsState())
 
     val state = combine(
-        _state, _allPixLists.onStart { emit(emptyList()) }, _colorList.onStart { emit(emptyList()) }
-    ) { state, allPixLists, colorList ->
+        _state, _colorsWithUses
+    ) { state, colorsWithUses ->
         state.copy(
-            colorList = colorList,
-            allCategories = allPixLists.flatMap { it.categories },
-            colorUses = _colorList.value.associate { color ->
-                color.id to
-                _allPixLists.value.sumOf { pixList ->
-                    pixList.categories.count { it.color?.id == color.id }
-                }
-            }
+            colorList = colorsWithUses.keys.toList().sortedBy { it.name },
+            colorUses = colorsWithUses.mapKeys { it.key.id }
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ManageColorsState())
 
-    fun loadDefaultColors() {
-        val invalideNames = _colorList.value.map { it.name }
+    fun onAction(action: ManageColorsAction) {
+        when (action) {
+            is ManageColorsAction.LoadDefaultColors -> loadDefaultColors()
+            is ManageColorsAction.DeleteUnusedColors -> deleteUnusedColors()
+            is ManageColorsAction.AddColor -> addColor(action.name, action.red, action.green, action.blue)
+            is ManageColorsAction.UpdateColor -> updateColor(action.colorToEdit, action.newName, action.newRgb)
+            is ManageColorsAction.DeleteColor -> deleteColor(action.colorToDelete)
+            else -> throw NotImplementedError("Action not implemented in ViewModel: $action")
+        }
+    }
+
+    private fun loadDefaultColors() {
+        val invalideNames = state.value.colorList.map { it.name }
         listOf(
             PixColor(name = "Peach", red = 1.0f, green = 0.87f, blue = 0.77f),
             PixColor(name = "Lemon Yellow", red = 1.0f, green = 0.97f, blue = 0.69f),
@@ -66,27 +57,21 @@ class ManageColorsViewModel(
         }
     }
 
-    fun deleteUnusedColors() {
+    private fun deleteUnusedColors() {
         viewModelScope.launch {
-            val unusedColors = _colorList.value.filter { color ->
-                _allPixLists.value.none { pixList ->
-                    pixList.categories.any { it.color?.id == color.id }
-                }
-            }
-            unusedColors.forEach { color ->
-                deleteColor(color)
-            }
+            val amount = repository.deleteUnusedColors()
+            println(amount)
         }
     }
 
     // Color DB operations
-    fun addColor(name: String, red: Float, green: Float, blue: Float) {
+    private fun addColor(name: String, red: Float, green: Float, blue: Float) {
         viewModelScope.launch {
             repository.createColor(name, red, green, blue)
         }
     }
 
-    fun updateColor(colorToEdit: PixColor, newName: String?, newRgb: List<Float>?) {
+    private fun updateColor(colorToEdit: PixColor, newName: String?, newRgb: List<Float>?) {
         viewModelScope.launch {
             if (newName != null) {
                 repository.renameColor(colorToEdit.id, newName)
@@ -97,9 +82,9 @@ class ManageColorsViewModel(
         }
     }
 
-    fun deleteColor(color: PixColor) {
+    private fun deleteColor(color: PixColor) {
         viewModelScope.launch {
-            repository.deleteColor(color.id)
+            repository.deleteColorById(color.id)
         }
     }
 }

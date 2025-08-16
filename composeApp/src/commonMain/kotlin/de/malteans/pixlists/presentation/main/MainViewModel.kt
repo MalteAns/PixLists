@@ -15,7 +15,7 @@ class MainViewModel(
 ): ViewModel() {
 
     private val _allPixLists = repository
-        .getAllPixLists()
+        .getAllPixListsWithoutData()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -23,6 +23,7 @@ class MainViewModel(
         )
 
     private val _state = MutableStateFlow(MainState())
+
     val state = combine(_state, _allPixLists) { state, allPixLists ->
         state.copy(
             allPixLists = allPixLists,
