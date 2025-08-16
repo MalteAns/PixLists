@@ -67,6 +67,9 @@ kotlin {
 
             // Datetime
             implementation(libs.kotlinx.datetime)
+
+            // Reorderable
+            implementation(libs.reorderable)
         }
 
         dependencies {

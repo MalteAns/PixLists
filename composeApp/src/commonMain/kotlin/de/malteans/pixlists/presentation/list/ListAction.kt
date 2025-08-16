@@ -22,6 +22,7 @@ sealed interface ListAction {
         val newColor: PixColor?
     ) : ListAction
     data class DeletePixCategory(val category: PixCategory) : ListAction
+    data class UpdatePixCategoryOrder(val categories: List<Long>) : ListAction
 
     data class SetPixEntry(
         val date: LocalDate,

@@ -67,6 +67,7 @@ class ListViewModel(
             is ListAction.CreatePixCategory -> createPixCategory(action.name, action.color)
             is ListAction.UpdatePixCategory -> updatePixCategory(action.category, action.newName, action.newColor)
             is ListAction.DeletePixCategory -> deletePixCategory(action.category)
+            is ListAction.UpdatePixCategoryOrder -> updateCategoryOrder(action.categories)
 
             is ListAction.SetPixEntry -> setPixEntry(action.date, action.category)
 
@@ -130,9 +131,9 @@ class ListViewModel(
     }
 
     // Update Category Order ------------------------------------------------
-    private fun updateCategoryOrder(newOrder: List<PixCategory>) {
+    private fun updateCategoryOrder(newOrder: List<Long>) {
         viewModelScope.launch {
-            repository.changeCategoriesOrder(_curPixListId.value!!, newOrder.map { it.id })
+            repository.changeCategoriesOrder(_curPixListId.value!!, newOrder)
         }
     }
 }

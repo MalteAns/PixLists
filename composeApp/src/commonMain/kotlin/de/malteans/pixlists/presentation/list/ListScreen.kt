@@ -6,13 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,18 +24,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.malteans.pixlists.domain.Months
 import de.malteans.pixlists.domain.PixCategory
 import de.malteans.pixlists.presentation.components.CustomTopBar
 import de.malteans.pixlists.presentation.components.SnackbarManager
-import de.malteans.pixlists.presentation.components.customIcons.FilledPixIcon
-import de.malteans.pixlists.presentation.components.customIcons.OutlinedPixIcon
 import de.malteans.pixlists.presentation.list.components.CategoryDialog
+import de.malteans.pixlists.presentation.list.components.CategoryList
 import de.malteans.pixlists.presentation.list.components.EntryDialog
 import de.malteans.pixlists.presentation.list.components.ListStatus
+import de.malteans.pixlists.presentation.list.components.PixGrid
 import de.malteans.pixlists.presentation.list.components.RenamePixListDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -227,8 +221,8 @@ fun ListScreen(
                 .padding(pad)
                 .padding(start = 8.dp, end = 4.dp, bottom = 16.dp)
         ) {
-            when (state.listStatus) {
-                ListStatus.LOADING -> {
+            when {
+                (state.listStatus == ListStatus.LOADING) -> {
                     Column (
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -237,188 +231,38 @@ fun ListScreen(
                         Text(stringResource(Res.string.loading))
                     }
                 }
-                ListStatus.OPENED -> {
+                (state.listStatus == ListStatus.OPENED && state.curPixList != null) -> {
                     Row {
-                        Column (
-                            modifier = Modifier.weight(0.8f)
-                        ) {
-                            Row (
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
-                            ) {
-                                for (monthNumber in 0..12) {
-                                    Column (
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center,
-                                        modifier = Modifier
-                                            .weight(1f / 13f)
-                                    ) {
-                                        when (monthNumber) {
-                                            0 -> {
-                                                for (j in 0..31) {
-                                                    Row (
-                                                        modifier = Modifier
-                                                            .weight(1f / 32f),
-                                                        horizontalArrangement = Arrangement.End,
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                    ) {
-                                                        val text = if (j == 0) {
-                                                            null
-                                                        } else if (j < 10) {
-                                                            "0$j"
-                                                        } else {
-                                                            "$j"
-                                                        }
-                                                        if (text != null) {
-                                                            Text (
-                                                                text = text,
-                                                                style = MaterialTheme.typography.labelMedium,
-                                                                color = MaterialTheme.colorScheme.onSurface,
-                                                                textAlign = TextAlign.Center,
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            else -> {
-                                                val month = Months.getByIndex(monthNumber)
-                                                for (day in 0..month.getDaysCount) {
-                                                    Row (
-                                                        modifier = Modifier
-                                                            .weight(1f / 32f),
-                                                        verticalAlignment = Alignment.Bottom,
-                                                    ) {
-                                                        if (day == 0) {
-                                                            Text(
-                                                                text = month.getShortStringId,
-                                                                style = MaterialTheme.typography.labelMedium,
-                                                                color = MaterialTheme.colorScheme.onSurface,
-                                                            )
-                                                        } else {
-                                                            val currentDate = LocalDate(2025, monthNumber, day)
-                                                            state.curPixList!!.entries[currentDate]
-                                                                .let { pixCategory ->
-                                                                    IconButton(
-                                                                        onClick = {
-                                                                            if (state.curCategories.isNotEmpty()) {
-                                                                                entryToEdit = currentDate
-                                                                                curEntryCategory = pixCategory
-                                                                                showEntryDialog = true
-                                                                            }
-                                                                        }
-                                                                    ) {
-                                                                        if (pixCategory == null) {
-                                                                            Icon(
-                                                                                imageVector = OutlinedPixIcon,
-                                                                                contentDescription = "Empty Pix",
-                                                                                tint = MaterialTheme.colorScheme.onSurface.copy(
-                                                                                    alpha = 0.5f
-                                                                                ),
-                                                                            )
-                                                                        } else {
-                                                                            if (pixCategory.color != null) {
-                                                                                Icon(
-                                                                                    imageVector = FilledPixIcon,
-                                                                                    contentDescription = "Pix",
-                                                                                    tint = pixCategory.color.toColor(),
-                                                                                )
-                                                                            } else {
-                                                                                Icon(
-                                                                                    imageVector = OutlinedPixIcon,
-                                                                                    contentDescription = "Empty Pix",
-                                                                                    tint = MaterialTheme.colorScheme.error
-                                                                                )
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                        }
-                                                    }
-                                                }
-                                                for (r in 0 until 31 - month.getDaysCount) {
-                                                    Row (
-                                                        modifier = Modifier
-                                                            .weight(1f / 32f),
-                                                    ) {
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        PixGrid(
+                            curPixList = state.curPixList,
+                            enabled = state.curCategories.isNotEmpty(),
+                            onEntryEdit = { date, category ->
+                                entryToEdit = date
+                                curEntryCategory = category
+                                showEntryDialog = true
+                            },
+                            modifier = Modifier.weight(0.8f),
+                        )
                         // Categories -----------------------------------------------------------------
-                        Column(
+                        CategoryList(
+                            state.curCategories,
+                            onEditCategory = { category ->
+                                categoryToEdit = category
+                                showCategoryDialog = true
+                            },
+                            onCreateCategory = {
+                                categoryToEdit = null
+                                showCategoryDialog = true
+                            },
+                            onUpdateOrder = {
+                                onAction(ListAction.UpdatePixCategoryOrder(it))
+                            },
                             modifier = Modifier
                                 .weight(0.2f)
-                                .padding(start = 4.dp, top = 8.dp)
-                                .fillMaxSize()
-                        ) {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) {
-                                items(state.curCategories) { category ->
-                                    Column (
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(4.dp)
-                                            .clickable {
-                                                categoryToEdit = category
-                                                showCategoryDialog = true
-                                            },
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Row {
-                                            if (category.color != null) {
-                                                Icon(
-                                                    imageVector = FilledPixIcon,
-                                                    contentDescription = "Pix Category Icon",
-                                                    tint = category.color.toColor(),
-                                                )
-                                            } else {
-                                                Icon(
-                                                    imageVector = OutlinedPixIcon,
-                                                    contentDescription = "Empty Pix",
-                                                    tint = MaterialTheme.colorScheme.error
-                                                )
-                                            }
-                                        }
-                                        Row {
-                                            Text(
-                                                text = category.name,
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                textAlign = TextAlign.Center,
-                                            )
-                                        }
-                                    }
-                                }
-                                item {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.Top,
-                                    ) {
-                                        IconButton(
-                                            onClick = {
-                                                categoryToEdit = null
-                                                showCategoryDialog = true
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.AddBox,
-                                                contentDescription = "Add Category"
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        )
                     }
                 }
-                ListStatus.EMPTY -> {
+                else -> {
                     Column (
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,

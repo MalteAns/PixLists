@@ -12,6 +12,7 @@ kotlinSerialization = "1.9.0"
 koin = "4.1.0"
 
 ksp = "2.2.0-2.0.2"
+reorderable = "2.5.1"
 sqlite = "2.5.2"
 room = "2.7.2"
 uiAndroid = "1.8.3"
@@ -41,6 +42,9 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-ui-android = { group = "androidx.compose.ui", name = "ui-android", version.ref = "uiAndroid" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+
+# Reorderable -------------------------------------
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
