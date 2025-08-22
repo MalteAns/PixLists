@@ -6,11 +6,17 @@ sealed interface Route {
     @Serializable
     data class ListScreen(
         val curPixListId: Long? = null,
-    )
+    ) : Route
 
     @Serializable
-    object ManageColorsScreen
+    object ManageColorsScreen : Route
 
     @Serializable
-    object LoadingScreen
+    object LoadingScreen : Route
+
+    @Serializable
+    object SettingsScreen : Route
+
+    @Serializable
+    object LicensesScreen : Route
 }

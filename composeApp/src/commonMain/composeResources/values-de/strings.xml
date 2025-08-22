@@ -33,4 +33,6 @@
     <string name="add_color">Farbe hinzufügen</string>
     <string name="delete_unused_colors">Nicht verwendete Farben löschen</string>
     <string name="delete_unused_colors_desc">Bist du sicher, dass du alle Farben, die nicht von einer Kategorie verwendet werden, gelöscht werden sollen?</string>
+    <string name="settings">Einstellungen</string>
+    <string name="licenses">Lizenzen</string>
 </resources>

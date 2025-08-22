@@ -11,7 +11,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.ColorLens
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +59,7 @@ import pixlists.composeapp.generated.resources.confirm_delete_desc
 import pixlists.composeapp.generated.resources.delete_pixlist
 import pixlists.composeapp.generated.resources.manage_colors
 import pixlists.composeapp.generated.resources.new_pixlist
+import pixlists.composeapp.generated.resources.settings
 
 @Composable
 fun MainScreen(
@@ -261,12 +264,36 @@ fun MainScreen(
                             if (state.curScreen == Screen.MANAGE_COLORS) {
                                 Icon(
                                     imageVector = Icons.Filled.ColorLens,
-                                    contentDescription = "Manage Colors"
+                                    contentDescription = "ColorLens"
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Outlined.ColorLens,
-                                    contentDescription = "Manage Colors"
+                                    contentDescription = "ColorLens"
+                                )
+                            }
+                        }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(Res.string.settings)) },
+                        onClick = {
+                            navController.navigate(Route.SettingsScreen)
+                            viewModel.setCurPixListId(null)
+                            viewModel.setCurScreen(Screen.SETTINGS)
+                            scope.launch { drawerState.close() }
+                        },
+                        selected = state.curScreen == Screen.SETTINGS,
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        icon = {
+                            if (state.curScreen == Screen.SETTINGS) {
+                                Icon(
+                                    imageVector = Icons.Filled.Settings,
+                                    contentDescription = "Settings"
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Outlined.Settings,
+                                    contentDescription = "Settings"
                                 )
                             }
                         }

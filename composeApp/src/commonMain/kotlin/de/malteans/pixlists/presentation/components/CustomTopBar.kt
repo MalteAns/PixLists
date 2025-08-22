@@ -23,13 +23,14 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CustomTopBar(
     title: @Composable () -> Unit,
+    navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit,
     openDrawer: () -> Unit,
 ) {
     CenterAlignedTopAppBar(
         title = title,
         actions = actions,
-        navigationIcon = {
+        navigationIcon = navigationIcon ?: {
             IconButton(
                 onClick = {
                     openDrawer()

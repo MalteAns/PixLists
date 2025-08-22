@@ -2,6 +2,8 @@ package de.malteans.pixlists.presentation.main.components
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -11,6 +13,8 @@ import de.malteans.pixlists.app.Route
 import de.malteans.pixlists.presentation.list.ListScreenRoot
 import de.malteans.pixlists.presentation.list.LoadingScreen
 import de.malteans.pixlists.presentation.manageColors.ManageColorsScreenRoot
+import de.malteans.pixlists.presentation.settings.SettingsScreenRoot
+import de.malteans.pixlists.presentation.settings.legals.LicensesScreen
 
 @Composable
 fun NavGraph(
@@ -49,6 +53,29 @@ fun NavGraph(
         composable<Route.LoadingScreen> {
             setCurScreen(Screen.LIST)
             LoadingScreen(openDrawer = openDrawer)
+        }
+        // Settings Screen
+        composable<Route.SettingsScreen> (
+            popEnterTransition = { slideInHorizontally { -it } },
+            exitTransition = { slideOutHorizontally { -it } },
+        ) {
+            setCurScreen(Screen.SETTINGS)
+            setPixListId(null)
+            SettingsScreenRoot(
+                onNavigateTo = navController::navigate,
+                openDrawer = openDrawer
+            )
+        }
+        // Licenses Screen
+        composable<Route.LicensesScreen>(
+            enterTransition = { slideInHorizontally { it } },
+            popExitTransition = { slideOutHorizontally { it } }
+        ) {
+            setCurScreen(Screen.SETTINGS)
+            setPixListId(null)
+            LicensesScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

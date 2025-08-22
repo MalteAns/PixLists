@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.0"
+agp = "8.12.1"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "34"
@@ -12,13 +12,16 @@ kotlinSerialization = "1.9.0"
 koin = "4.1.0"
 
 ksp = "2.2.0-2.0.2"
-reorderable = "2.5.1"
 sqlite = "2.5.2"
 room = "2.7.2"
 uiAndroid = "1.8.3"
 roomKtx = "2.7.2"
 
 kotlinxDatetime = "0.7.1"
+
+reorderable = "2.5.1"
+
+aboutLibraries = "12.2.4"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
@@ -46,6 +49,9 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 # Reorderable -------------------------------------
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
+# About Libraries ---------------------------------
+aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
@@ -56,3 +62,5 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
+
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }

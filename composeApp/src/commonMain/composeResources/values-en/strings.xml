@@ -33,4 +33,6 @@
     <string name="add_color">Add Colors</string>
     <string name="delete_unused_colors">Delete unused Colors</string>
     <string name="delete_unused_colors_desc">Are you sure you want to delete all colors that are not used in any category?</string>
+    <string name="settings">Settings</string>
+    <string name="licenses">Licenses</string>
 </resources>

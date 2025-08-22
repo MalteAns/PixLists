@@ -9,12 +9,19 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.aboutLibraries)
+}
+
+aboutLibraries {
+    export {
+        outputFile = file("src/commonMain/composeResources/files/aboutlibraries.json")
+    }
 }
 
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
     
@@ -70,6 +77,9 @@ kotlin {
 
             // Reorderable
             implementation(libs.reorderable)
+
+            // About Libraries
+            implementation(libs.aboutlibraries.compose.m3)
         }
 
         dependencies {
@@ -87,7 +97,8 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 3412100
-        versionName = "1.0-pre0"
+        versionName = "1.0"
+        versionNameSuffix = "alpha"
     }
     packaging {
         resources {
