@@ -19,12 +19,13 @@ fun OutlinedText(
     value: String,
     label: @Composable () -> Unit = {},
     trailingIcon: @Composable (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
 ) {
     OutlinedTextFieldDefaults.DecorationBox(
         value = value,
         innerTextField = {
             Row(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {

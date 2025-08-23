@@ -1,6 +1,5 @@
 package de.malteans.pixlists.presentation.main
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -102,39 +101,44 @@ fun MainScreen(
                     color = MaterialTheme.colorScheme.onSurface
                 )
             },
-            leftIcon = {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = "Close",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.clickable {
+            leftIcons = {
+                IconButton(
+                    onClick = {
                         if (listToDelete!!.id == state.curPixListId) {
                             navController.navigate(Route.ListScreen(listToDelete!!.id))
                         }
                         showDeleteListDialog = false
                     }
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Close",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             },
-            rightIcon = {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.clickable {
+            rightIcons = {
+                IconButton(
+                    onClick = {
                         viewModel.deletePixListById(listToDelete!!.id)
                         if (listToDelete!!.id == state.curPixListId) {
                             viewModel.setCurPixListId(null)
                         }
                         showDeleteListDialog = false
                     }
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
             },
         ) {
             Text(
                 text = stringResource(Res.string.confirm_delete_desc, listToDelete!!.name),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 16.dp)
             )
         }
     }

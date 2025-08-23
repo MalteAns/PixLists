@@ -121,11 +121,11 @@ class ListViewModel(
     }
 
     // PixEntry functions ---------------------------------------------------
-    private fun setPixEntry(date: LocalDate, category: PixCategory?) {
+    private fun setPixEntry(date: LocalDate, categories: List<PixCategory>) {
         viewModelScope.launch {
-            when (category) {
-                null -> repository.deleteEntry(_curPixListId.value!!, date)
-                else -> repository.setEntry(_curPixListId.value!!, category.id, date)
+            when (categories.size) {
+                0 -> repository.deleteEntry(_curPixListId.value!!, date)
+                else -> repository.setEntry(_curPixListId.value!!, categories.map { it.id }, date)
             }
         }
     }

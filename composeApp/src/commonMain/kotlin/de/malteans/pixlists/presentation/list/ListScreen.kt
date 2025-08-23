@@ -97,27 +97,24 @@ fun ListScreen(
 
     var showEntryDialog by remember { mutableStateOf(false) }
     var entryToEdit by remember { mutableStateOf<LocalDate?>(null) }
-    var curEntryCategory by remember { mutableStateOf<PixCategory?>(null) }
+    var curEntryCategories by remember { mutableStateOf<List<PixCategory>>(emptyList()) }
 
     if (showEntryDialog) {
         val startDate: LocalDate? = entryToEdit
-        val curCategory: PixCategory? = curEntryCategory
-        if (startDate != null) {
-            entryToEdit = null
-        }
-        if (curCategory != null) {
-            curEntryCategory = null
-        }
+        val curCategories: List<PixCategory> = curEntryCategories
         EntryDialog(
             categories = state.curCategories,
             onDismiss = { showEntryDialog = false },
-            onEdit = { date, category ->
-                onAction(ListAction.SetPixEntry(date, category))
+            onSubmit = { date, categories ->
+                onAction(ListAction.SetPixEntry(date, categories))
                 showEntryDialog = false
             },
             startDate = startDate
                 ?: Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
-            curCategory = curCategory
+            onDateChanged = { newDate ->
+                state.curPixList?.entries[newDate] ?: emptyList()
+            },
+            curCategories = curCategories
         )
     }
 
@@ -130,7 +127,7 @@ fun ListScreen(
                 showCategoryDialog = false
                 categoryToEdit = null
             },
-            onAdd = { name, color, isEdit ->
+            onSubmit = { name, color, isEdit ->
                 if (isEdit) {
                     onAction(ListAction.UpdatePixCategory(
                         categoryToEdit!!,
@@ -234,11 +231,11 @@ fun ListScreen(
                 (state.listStatus == ListStatus.OPENED && state.curPixList != null) -> {
                     Row {
                         PixGrid(
-                            curPixList = state.curPixList,
+                            entries = state.curPixList.entries,
                             enabled = state.curCategories.isNotEmpty(),
-                            onEntryEdit = { date, category ->
+                            onEntryEdit = { date, categories ->
                                 entryToEdit = date
-                                curEntryCategory = category
+                                curEntryCategories = categories
                                 showEntryDialog = true
                             },
                             modifier = Modifier.weight(0.8f),

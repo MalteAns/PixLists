@@ -26,6 +26,6 @@ sealed interface ListAction {
 
     data class SetPixEntry(
         val date: LocalDate,
-        val category: PixCategory?
+        val category: List<PixCategory>
     ) : ListAction
 }

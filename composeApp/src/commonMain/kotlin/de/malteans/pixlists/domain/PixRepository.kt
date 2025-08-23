@@ -45,7 +45,7 @@ interface PixRepository {
     // Entry Operations --------------------------------------------------
     suspend fun createEntry(listId: Long, categoryId: Long, date: LocalDate): Long
 
-    suspend fun setEntry(listId: Long, categoryId: Long, date: LocalDate): Long
+    suspend fun setEntry(listId: Long, categoryIds: List<Long>, date: LocalDate): List<Long>
 
     suspend fun deleteEntry(listId: Long, date: LocalDate)
 }

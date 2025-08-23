@@ -52,9 +52,12 @@ class DefaultPixRepository(
             val mappedCategories = categories.associate { categoryEntity ->
                 categoryEntity.id to categoryEntity.toPixCategory(colorsMap[categoryEntity.colorId])
             }
-            val mappedEntries = entries.associate { entryEntity ->
-                entryEntity.date to mappedCategories[entryEntity.categoryId]
-            }
+            val mappedEntries = entries.groupBy(
+                keySelector = { it.date },
+                valueTransform = { mappedCategories[it.categoryId]
+                    ?: throw IllegalStateException("Category ${it.categoryId} not found for entry ${it.id} on ${it.date}")
+                }
+            )
             listEntity?.toPixList(mappedCategories.values.toList(), mappedEntries)
         }
     }
@@ -139,12 +142,28 @@ class DefaultPixRepository(
         ))
     }
 
-    override suspend fun setEntry(listId: Long, categoryId: Long, date: LocalDate): Long {
-        return dao.upsertEntry(PixEntryEntity(
-            listId = listId,
-            date = date,
-            categoryId = categoryId
-        ))
+    override suspend fun setEntry(listId: Long, categoryIds: List<Long>, date: LocalDate): List<Long> {
+        val currentEntries
+            = dao.getEntriesWithoutUpdate(listId, date).associateBy { it.categoryId }.toMutableMap()
+        val entryIds = mutableListOf<Long>()
+        for (id in categoryIds) {
+            if (id in currentEntries.keys) {
+                currentEntries.remove(id)
+                entryIds.add(id)
+            } else {
+                entryIds.add(dao.upsertEntry(
+                    PixEntryEntity(
+                        listId = listId,
+                        date = date,
+                        categoryId = id
+                    )
+                ))
+            }
+        }
+        for (entry in currentEntries.values) {
+            dao.deleteEntryById(entry.id)
+        }
+        return entryIds
     }
 
     override suspend fun deleteEntry(listId: Long, date: LocalDate) {

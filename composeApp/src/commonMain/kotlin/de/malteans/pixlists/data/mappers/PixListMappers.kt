@@ -7,7 +7,7 @@ import kotlinx.datetime.LocalDate
 
 fun PixListEntity.toPixList(
     categories: List<PixCategory> = emptyList(),
-    entries: Map<LocalDate, PixCategory?> = emptyMap()
+    entries: Map<LocalDate, List<PixCategory>> = emptyMap()
 ): PixList {
     return PixList(
         id = id,

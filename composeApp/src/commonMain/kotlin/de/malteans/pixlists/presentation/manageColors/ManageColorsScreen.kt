@@ -114,26 +114,32 @@ fun ManageColorsScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
             },
-            leftIcon = {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = "Close",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.clickable {
+            leftIcons = {
+                IconButton(
+                    onClick = {
                         showDeleteUnusedDialog = false
                     }
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Close",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             },
-            rightIcon = {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.clickable {
+            rightIcons = {
+                IconButton(
+                    onClick = {
                         onAction(ManageColorsAction.DeleteUnusedColors)
                         showDeleteUnusedDialog = false
                     }
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
         ) {
             Text(

@@ -1,8 +1,9 @@
 package de.malteans.pixlists.presentation.list.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -54,36 +56,41 @@ fun RenamePixListDialog(
                 color = MaterialTheme.colorScheme.onSurface,
             )
         },
-        leftIcon = {
-            Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = "Close",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.clickable { onDismiss() }
-            )
+        leftIcons = {
+            IconButton(
+                onClick = { onDismiss() }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Close",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         },
-        rightIcon = {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Submit",
-                tint = if (validToFinish) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                modifier = Modifier.clickable {
-                    if (validToFinish) {
-                        onFinish(name)
-                    }
-                }
-            )
+        rightIcons = {
+            IconButton(
+                onClick = {
+                    onFinish(name)
+                },
+                enabled = validToFinish,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Submit",
+                    tint = if (validToFinish) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                )
+            }
         }
     ) {
-        var isError by remember { mutableStateOf(invalideNames.contains(name)) }
-
-        LaunchedEffect(name) {
-            isError = invalideNames.contains(name)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        if (isError) {
+        val invalid = invalideNames.contains(name)
+        AnimatedVisibility(
+            visible = invalid,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+            modifier = Modifier
+                .fillMaxWidth()
+        ){
             Row {
                 Icon(
                     imageVector = Icons.Default.Warning,
@@ -104,10 +111,9 @@ fun RenamePixListDialog(
             value = name,
             onValueChange = { name = it },
             label = { Text("Name") },
-            isError = isError,
+            isError = invalid,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
         )
     }
 }

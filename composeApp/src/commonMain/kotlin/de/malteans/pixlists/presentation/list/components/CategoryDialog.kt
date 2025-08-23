@@ -1,23 +1,25 @@
 package de.malteans.pixlists.presentation.list.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +33,7 @@ import de.malteans.pixlists.domain.PixColor
 import de.malteans.pixlists.presentation.components.CustomDialog
 import de.malteans.pixlists.presentation.components.Dropdown
 import de.malteans.pixlists.presentation.components.customIcons.FilledPixIcon
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.Res
 import pixlists.composeapp.generated.resources.add_category
@@ -44,7 +47,7 @@ import pixlists.composeapp.generated.resources.no_color
 @Composable
 fun CategoryDialog(
     onDismiss: () -> Unit,
-    onAdd: (String?, PixColor?, Boolean) -> Unit,
+    onSubmit: (String?, PixColor?, Boolean) -> Unit,
     onDelete: () -> Unit,
     colors: List<PixColor> = emptyList(),
     invalidNames: List<String> = emptyList(),
@@ -58,62 +61,77 @@ fun CategoryDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = if (isEdit) stringResource(Res.string.add_category)
-                    else stringResource(Res.string.edit_category),
+                text = if (isEdit) stringResource(Res.string.edit_category)
+                    else stringResource(Res.string.add_category),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         },
-        leftIcon = {
-            Row {
+        leftIcons = {
+            IconButton(
+                onClick = { onDismiss() }
+            ) {
                 Icon(
                     imageVector = Icons.Default.Clear,
                     contentDescription = "Close",
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.clickable { onDismiss() }
                 )
-                if (isEdit) {
-                    Spacer(modifier = Modifier.width(8.dp))
+            }
+        },
+        rightIcons = {
+            if (name.trim() != (categoryToEdit?.name ?: "") || color != categoryToEdit?.color) {
+                val enabled = name.isNotBlank() && color != null &&
+                    (!invalidNames.contains(name.trim()) xor (name.trim() == (categoryToEdit?.name ?: "")))
+                IconButton(
+                    onClick = {
+                        onSubmit(
+                            if (name.trim() == (categoryToEdit?.name ?: "")) null else name,
+                            if (color == categoryToEdit?.color) null else color,
+                            isEdit
+                        )
+                    },
+                    enabled = enabled,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Submit",
+                        tint = if (enabled) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    )
+                }
+            } else {
+                var deleteClicked by remember { mutableStateOf(false) }
+                LaunchedEffect(deleteClicked) {
+                    if (deleteClicked) {
+                        delay(2000)
+                        deleteClicked = false
+                    }
+                }
+                IconButton(
+                    onClick = {
+                        if (deleteClicked) onDelete()
+                        deleteClicked = !deleteClicked
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.clickable { onDelete() }
+                        tint = if (deleteClicked) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
-        },
-        rightIcon = {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Submit",
-                tint = if (name.isNotBlank() && color != null &&
-                    (!invalidNames.contains(name.trim()) xor (name.trim() == (categoryToEdit?.name ?: ""))) &&
-                    (name.trim() != (categoryToEdit?.name ?: "") || color != categoryToEdit?.color)
-                ) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                },
-                modifier = Modifier
-                    .clickable {
-                        if (name.isNotBlank() && color != null &&
-                            (!invalidNames.contains(name.trim()) xor (name.trim() == (categoryToEdit?.name ?: ""))) &&
-                            (name.trim() != (categoryToEdit?.name ?: "") || color != categoryToEdit?.color)
-                        ) {
-                            onAdd(
-                                if (name.trim() == (categoryToEdit?.name ?: "")) null else name,
-                                if (color == categoryToEdit?.color) null else color,
-                                isEdit
-                            )
-                        }
-                    },
-            )
         }
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        if (invalidNames.contains(name.trim()) && name.trim() != (categoryToEdit?.name ?: "")) {
+        val invalid = invalidNames.contains(name.trim()) && name.trim() != (categoryToEdit?.name ?: "")
+        AnimatedVisibility(
+            visible = invalid,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
             Row {
                 Icon(
                     imageVector = Icons.Default.Warning,

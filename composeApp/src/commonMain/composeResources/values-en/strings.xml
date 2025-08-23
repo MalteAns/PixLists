@@ -29,10 +29,18 @@
     <string name="confirm_delete_desc">Are you sure, you want to delete the list '%1$s'?</string>
     <string name="new_pixlist">New PixList</string>
     <string name="manage_colors">Manage Colors</string>
-    <string name="edit_color">Edit Colors</string>
-    <string name="add_color">Add Colors</string>
+    <string name="edit_color">Edit Color</string>
+    <string name="add_color">Add Color</string>
     <string name="delete_unused_colors">Delete unused Colors</string>
     <string name="delete_unused_colors_desc">Are you sure you want to delete all colors that are not used in any category?</string>
     <string name="settings">Settings</string>
     <string name="licenses">Licenses</string>
+
+    <string name="short_monday">Mon</string>
+    <string name="short_tuesday">Tue</string>
+    <string name="short_wednesday">Wed</string>
+    <string name="short_thursday">Thu</string>
+    <string name="short_friday">Fri</string>
+    <string name="short_saturday">Sat</string>
+    <string name="short_sunday">Sun</string>
 </resources>

@@ -33,11 +33,17 @@ interface PixDao {
     @Upsert
     suspend fun upsertEntry(entry: PixEntryEntity): Long
 
+    @Query("DELETE FROM pixentryentity WHERE id = :entryId")
+    suspend fun deleteEntryById(entryId: Long)
+
     @Query("DELETE FROM pixentryentity WHERE listId = :listId AND date = :date")
     suspend fun deleteEntryByListIdAndDate(listId: Long, date: LocalDate)
 
-    @Query("SELECT * FROM pixentryentity WHERE listId = :listId AND id = :entryId")
-    fun getEntry(listId: Long, entryId: Long): Flow<PixEntryEntity>
+    @Query("SELECT * FROM pixentryentity WHERE id = :entryId")
+    fun getEntry(entryId: Long): Flow<PixEntryEntity>
+
+    @Query("SELECT * FROM pixentryentity WHERE listId = :listId AND date = :date")
+    suspend fun getEntriesWithoutUpdate(listId: Long, date: LocalDate): List<PixEntryEntity>
 
     @Query("SELECT * FROM pixentryentity WHERE listId = :listId")
     fun getEntriesForList(listId: Long): Flow<List<PixEntryEntity>>

@@ -1,12 +1,9 @@
 package de.malteans.pixlists.presentation.list.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,9 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import de.malteans.pixlists.domain.Months
 import de.malteans.pixlists.domain.PixCategory
-import de.malteans.pixlists.domain.PixList
-import de.malteans.pixlists.presentation.components.customIcons.FilledPixIcon
-import de.malteans.pixlists.presentation.components.customIcons.OutlinedPixIcon
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -27,9 +21,9 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 @Composable
 fun PixGrid(
-    curPixList: PixList,
+    entries: Map<LocalDate, List<PixCategory>>,
     enabled: Boolean,
-    onEntryEdit: (LocalDate, PixCategory?) -> Unit,
+    onEntryEdit: (LocalDate, List<PixCategory>) -> Unit,
     modifier: Modifier,
 ) {
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -91,56 +85,15 @@ fun PixGrid(
                                         )
                                     } else {
                                         val date = LocalDate(2025, monthNumber, day)
-                                        curPixList.entries[date]
-                                            .let { pixCategory ->
-                                                IconButton(
-                                                    onClick = {
-                                                        if (enabled) {
-                                                            onEntryEdit(
-                                                                date,
-                                                                pixCategory
-                                                            )
-                                                        }
-                                                    },
-                                                ) {
-                                                    Box {
-                                                        if (pixCategory == null) {
-                                                            Icon(
-                                                                imageVector = OutlinedPixIcon,
-                                                                contentDescription = "Empty Pix",
-                                                                tint = if (date == today) {
-                                                                    MaterialTheme.colorScheme.primary
-                                                                } else {
-                                                                    MaterialTheme.colorScheme.onSurface.copy(
-                                                                        alpha = 0.5f
-                                                                    )
-                                                                }
-                                                            )
-                                                        } else {
-                                                            if (pixCategory.color != null) {
-                                                                Icon(
-                                                                    imageVector = FilledPixIcon,
-                                                                    contentDescription = "Pix",
-                                                                    tint = pixCategory.color.toColor(),
-                                                                )
-                                                                if (date == today) {
-                                                                    Icon(
-                                                                        imageVector = OutlinedPixIcon,
-                                                                        contentDescription = "Today Pix",
-                                                                        tint = MaterialTheme.colorScheme.primary
-                                                                    )
-                                                                }
-                                                            } else {
-                                                                Icon(
-                                                                    imageVector = OutlinedPixIcon,
-                                                                    contentDescription = "Empty Pix",
-                                                                    tint = MaterialTheme.colorScheme.error
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                        val pixCategories = entries.getOrElse(date) { emptyList() }
+                                        PixCellCanvas(
+                                            categories = pixCategories,
+                                            isToday = date == today,
+                                            enabled = enabled,
+                                            onClick = { onEntryEdit(date, pixCategories) },
+                                        )
+
+                                        return@Row
                                     }
                                 }
                             }

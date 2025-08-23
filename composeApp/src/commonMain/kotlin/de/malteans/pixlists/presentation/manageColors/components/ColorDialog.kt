@@ -1,18 +1,16 @@
 package de.malteans.pixlists.presentation.manageColors.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -74,51 +72,51 @@ fun ColorDialog(
                 color = MaterialTheme.colorScheme.onSurface,
             )
         },
-        leftIcon = {
-            Row {
+        leftIcons = {
+            IconButton(
+                onClick = { onDismiss() }
+            ) {
                 Icon(
                     imageVector = Icons.Default.Clear,
                     contentDescription = "Close",
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.clickable { onDismiss() }
                 )
-                if (isEdit) {
-                    Spacer(modifier = Modifier.width(8.dp))
+            }
+            if (isEdit) {
+                IconButton(
+                    onClick = { onDelete() }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
                         tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.clickable { onDelete() }
                     )
                 }
             }
         },
-        rightIcon = {
-            Icon(
-                imageVector = Icons.Default.Done,
-                contentDescription = "Done",
-                tint = if (validToSave) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                },
-                modifier = Modifier.clickable {
+        rightIcons = {
+            IconButton(
+                onClick = {
                     onFinish(
                         if (name.trim() == (colorToEdit?.name ?: "")) null else name,
                         if (mode == Mode.HEX) {
                             if (selectedHexValue == (colorToEdit?.toHex() ?: "")) null else hexToRgb(selectedHexValue)
-                        }
-                        else if (mode == Mode.RGB) {
+                        } else if (mode == Mode.RGB) {
                             if (selectedRgbValues == (colorToEdit?.getRgbValues() ?: listOf<Float>())) null else selectedRgbValues
-                        }
-                        else null,
+                        } else null,
                         isEdit,
                     )
                 }
-            )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = "Done",
+                    tint = if (validToSave) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                )
+            }
         },
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
         if (invalidNames.contains(name.trim()) && name.trim() != (colorToEdit?.name ?: "")) {
             Row {
                 Icon(
