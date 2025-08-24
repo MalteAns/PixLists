@@ -90,7 +90,7 @@ fun CategoryList(
                             .fillMaxWidth()
                             .padding(4.dp)
                             .clickable { onEditCategory(category) }
-                            .draggableHandle(
+                            .longPressDraggableHandle(
                                 onDragStarted = {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
                                 },
