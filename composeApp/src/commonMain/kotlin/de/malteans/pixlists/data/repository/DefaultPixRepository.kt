@@ -6,15 +6,22 @@ import de.malteans.pixlists.data.database.entities.PixColorEntity
 import de.malteans.pixlists.data.database.entities.PixEntryEntity
 import de.malteans.pixlists.data.database.entities.PixListEntity
 import de.malteans.pixlists.data.mappers.toDomain
-import de.malteans.pixlists.data.mappers.toPixCategory
+import de.malteans.pixlists.data.mappers.toEntity
+import de.malteans.pixlists.data.mappers.toJsonDto
 import de.malteans.pixlists.data.mappers.toPixList
+import de.malteans.pixlists.data.serialization.JsonFullDataDto
 import de.malteans.pixlists.domain.PixColor
 import de.malteans.pixlists.domain.PixList
 import de.malteans.pixlists.domain.PixRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 
 class DefaultPixRepository(
     private val dao: PixDao,
@@ -50,7 +57,7 @@ class DefaultPixRepository(
         ) { listEntity, colors, categories, entries ->
             val colorsMap = colors.associate { it.id to it.toDomain() }
             val mappedCategories = categories.associate { categoryEntity ->
-                categoryEntity.id to categoryEntity.toPixCategory(colorsMap[categoryEntity.colorId])
+                categoryEntity.id to categoryEntity.toDomain(colorsMap[categoryEntity.colorId])
             }
             val mappedEntries = entries.groupBy(
                 keySelector = { it.date },
@@ -168,5 +175,82 @@ class DefaultPixRepository(
 
     override suspend fun deleteEntry(listId: Long, date: LocalDate) {
         dao.deleteEntryByListIdAndDate(listId, date)
+    }
+
+    // Import/Export Operations -------------------------------------------
+    override suspend fun exportAllData(): JsonElement {
+        val allColors = dao.getAllColorsWithoutUpdate().associateBy { it.id }
+        val allLists = dao.getAllLists().first()
+        val allCategories = dao.getAllCategoriesWithoutUpdate()
+        val allEntries = dao.getAllEntriesWithoutUpdate()
+
+        val listsWithData = allLists.map { listEntity ->
+            PixList(
+                id = listEntity.id,
+                name = listEntity.name,
+                categories = allCategories
+                    .filter { categoryEntity -> categoryEntity.listId == listEntity.id }
+                    .map { categoryEntity -> categoryEntity.toDomain(allColors[categoryEntity.colorId]?.toDomain()) },
+                entries = allEntries
+                    .filter { entryEntity -> entryEntity.listId == listEntity.id }
+                    .groupBy(
+                        keySelector = { it.date },
+                        valueTransform = { allCategories.find { cat -> cat.id == it.categoryId }?.toDomain(allColors[it.categoryId]?.toDomain())
+                            ?: throw IllegalStateException("Category ${it.categoryId} not found for entry ${it.id} on ${it.date}") }
+                    )
+            )
+        }
+
+        val fullDataDto = JsonFullDataDto(
+            colors = allColors.map { (_, colorEntity) ->
+                colorEntity.toJsonDto()
+            },
+            lists = listsWithData.map { list ->
+                list.toJsonDto()
+            }
+        )
+
+        return Json.encodeToJsonElement(fullDataDto)
+    }
+
+    override suspend fun importAllData(data: JsonElement) {
+        val allCurrentColors = dao.getAllColorsWithoutUpdate().associateBy { it.name }
+        val allCurrentLists = dao.getAllLists().first().associateBy { it.name }
+
+        val fullDataDto = Json.decodeFromJsonElement<JsonFullDataDto>(data)
+        val colorsMap = fullDataDto.colors.associate {
+            it.name to if (it.name in allCurrentColors.keys) {
+                val currentColor = allCurrentColors[it.name]!!
+                if (currentColor.red != it.red || currentColor.green != it.green || currentColor.blue != it.blue)
+                    dao.upsertColor(it.toEntity().copy(name = it.name + " (imported)"))
+                else
+                    currentColor.id
+            } else {
+                dao.upsertColor(it.toEntity())
+            }
+        }
+        fullDataDto.lists.forEach { listDto ->
+            val listId = if (listDto.name !in allCurrentLists.keys) dao.upsertList(listDto.toEntity())
+                else dao.upsertList(listDto.toEntity().copy(name = listDto.name + " (imported)"))
+
+            val categoriesMap = listDto.categories.associate { categoryDto ->
+                categoryDto.name to dao.upsertCategory(categoryDto.toEntity(
+                    listId = listId,
+                    colorId = colorsMap[categoryDto.colorName]
+                        ?: throw IllegalStateException("Color '${categoryDto.colorName}' not found for category '${categoryDto.name}' in list '${listDto.name}'"),
+                ))
+            }
+            listDto.entries.forEach { entryDto ->
+                val date = LocalDate.fromEpochDays(entryDto.epochDays)
+                entryDto.categoryNames.forEach { categoryName ->
+                    dao.upsertEntry(PixEntryEntity(
+                        listId = listId,
+                        date = date,
+                        categoryId = categoriesMap[categoryName]
+                            ?: throw IllegalStateException("Category '$categoryName' not found for entry on $date in list '${listDto.name}'")
+                    ))
+                }
+            }
+        }
     }
 }

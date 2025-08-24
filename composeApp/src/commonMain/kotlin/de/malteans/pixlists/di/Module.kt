@@ -8,6 +8,7 @@ import de.malteans.pixlists.domain.PixRepository
 import de.malteans.pixlists.presentation.list.ListViewModel
 import de.malteans.pixlists.presentation.main.MainViewModel
 import de.malteans.pixlists.presentation.manageColors.ManageColorsViewModel
+import de.malteans.pixlists.presentation.settings.SettingsViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -27,4 +28,5 @@ val sharedModule = module {
     viewModel { MainViewModel(get()) }
     viewModel { ListViewModel(get()) }
     viewModel { ManageColorsViewModel(get()) }
+    viewModel { SettingsViewModel(get()) }
 }

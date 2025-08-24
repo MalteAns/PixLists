@@ -17,7 +17,7 @@ object SnackbarManager {
     val snackbarMessages = _snackbarMessages.asSharedFlow()
 
     suspend fun showSnackbar(
-        message: String, actionLabel: String? = null, withDismissAction: Boolean = false,
+        message: String, actionLabel: String? = null, withDismissAction: Boolean = actionLabel != null,
         duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite,
         onAction: () -> Unit = {},
     ) {

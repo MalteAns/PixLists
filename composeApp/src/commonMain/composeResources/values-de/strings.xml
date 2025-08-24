@@ -43,4 +43,9 @@
     <string name="short_friday">Fr</string>
     <string name="short_saturday">Sa</string>
     <string name="short_sunday">So</string>
+
+    <string name="export_success">Die Daten wurden erfolgreich exportiert.</string>
+    <string name="export_failed">Beim Exportieren der Daten ist ein Fehler aufgetreten. Bitte versuche es erneut.</string>
+    <string name="import_success">Die Daten wurden erfolgreich importiert.</string>
+    <string name="import_failed">Beim Importieren der Daten ist ein Fehler aufgetreten. Bitte versuche es erneut.</string>
 </resources>

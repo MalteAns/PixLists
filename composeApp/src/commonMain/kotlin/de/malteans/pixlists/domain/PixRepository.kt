@@ -2,6 +2,7 @@ package de.malteans.pixlists.domain
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.JsonElement
 
 interface PixRepository {
 
@@ -48,4 +49,9 @@ interface PixRepository {
     suspend fun setEntry(listId: Long, categoryIds: List<Long>, date: LocalDate): List<Long>
 
     suspend fun deleteEntry(listId: Long, date: LocalDate)
+
+    // Import/Export Operations -------------------------------------------
+    suspend fun exportAllData(): JsonElement
+
+    suspend fun importAllData(data: JsonElement)
 }

@@ -42,6 +42,9 @@ interface PixDao {
     @Query("SELECT * FROM pixentryentity WHERE id = :entryId")
     fun getEntry(entryId: Long): Flow<PixEntryEntity>
 
+    @Query("SELECT * FROM pixentryentity")
+    suspend fun getAllEntriesWithoutUpdate(): List<PixEntryEntity>
+
     @Query("SELECT * FROM pixentryentity WHERE listId = :listId AND date = :date")
     suspend fun getEntriesWithoutUpdate(listId: Long, date: LocalDate): List<PixEntryEntity>
 
@@ -63,6 +66,9 @@ interface PixDao {
 
     @Query("SELECT * FROM pixcategoryentity")
     fun getAllCategories(): Flow<List<PixCategoryEntity>>
+
+    @Query("SELECT * FROM pixcategoryentity")
+    suspend fun getAllCategoriesWithoutUpdate(): List<PixCategoryEntity>
 
     @Query("SELECT COUNT(*) FROM pixcategoryentity WHERE listId = :listId")
     suspend fun getCategoryCountForList(listId: Long): Int
@@ -91,6 +97,9 @@ interface PixDao {
 
     @Query("SELECT * FROM pixcolorentity")
     fun getAllColors(): Flow<List<PixColorEntity>>
+
+    @Query("SELECT * FROM pixcolorentity")
+    suspend fun getAllColorsWithoutUpdate(): List<PixColorEntity>
 
     @Query("UPDATE pixcolorentity SET name = :newName WHERE id = :colorId")
     suspend fun renameColor(colorId: Long, newName: String)
