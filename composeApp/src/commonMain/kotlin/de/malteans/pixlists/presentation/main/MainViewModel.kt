@@ -3,7 +3,7 @@ package de.malteans.pixlists.presentation.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.malteans.pixlists.domain.PixRepository
-import de.malteans.pixlists.presentation.main.components.Screen
+import de.malteans.pixlists.presentation.main.components.CurScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -48,7 +48,7 @@ class MainViewModel(
         _state.value = _state.value.copy(curPixListId = id)
     }
 
-    fun setCurScreen(screen: Screen) {
+    fun setCurScreen(screen: CurScreen) {
         _state.value = _state.value.copy(curScreen = screen)
     }
 }

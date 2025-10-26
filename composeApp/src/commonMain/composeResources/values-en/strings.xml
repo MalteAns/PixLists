@@ -48,4 +48,6 @@
     <string name="export_failed">An Error accrued while exporting the data. Please try again.</string>
     <string name="import_success">Successfully imported the data.</string>
     <string name="import_failed">An Error accrued while importing the data. Please try again.</string>
+
+    <string name="privacy_policy_path">files/privacy_policy_en.html</string>
 </resources>

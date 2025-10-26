@@ -48,4 +48,6 @@
     <string name="export_failed">Beim Exportieren der Daten ist ein Fehler aufgetreten. Bitte versuche es erneut.</string>
     <string name="import_success">Die Daten wurden erfolgreich importiert.</string>
     <string name="import_failed">Beim Importieren der Daten ist ein Fehler aufgetreten. Bitte versuche es erneut.</string>
+
+    <string name="privacy_policy_path">files/privacy_policy_de.html</string>
 </resources>

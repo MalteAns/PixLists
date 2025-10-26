@@ -1,67 +1,101 @@
 package de.malteans.pixlists.presentation.settings.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOutBack
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import de.malteans.pixlists.presentation.theme.containerColor
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsItem(
     title: String,
-    trailingIcon: ImageVector,
+    description: String,
+    icon: ImageVector,
     onClick: () -> Unit,
-    subtitle: String? = null,
+    onLongClick: (() -> Unit)? = null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    Row (
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
-            .clickable (
-                enabled = enabled,
-                onClick = onClick
+            .background(MaterialTheme.colorScheme.containerColor)
+            .then(
+                if (onLongClick != null) {
+                    Modifier.combinedClickable(
+                        enabled = enabled,
+                        onClick = onClick,
+                        onLongClick = onLongClick,
+                    )
+                } else {
+                    Modifier.clickable(
+                        enabled = enabled,
+                        onClick = onClick,
+                    )
+                }
             )
-            .fillMaxWidth()
             .padding(16.dp)
     ) {
+        var iconState by remember { mutableStateOf(icon) }
+        val iconScale = remember { Animatable(1f) }
+
+        LaunchedEffect(icon) {
+            iconScale.animateTo(0f, animationSpec = tween(150))
+            iconState = icon
+            iconScale.animateTo(1f, animationSpec = tween(150, easing = EaseOutBack))
+        }
+
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .size(32.dp)
+                .fillMaxHeight()
         ) {
             Icon(
-                imageVector = trailingIcon,
-                contentDescription = title,
-                modifier = Modifier.size(32.dp)
+                imageVector = iconState,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                    alpha = if (enabled) 1f else 0.6f
+                ),
+                modifier = Modifier
+                    .size(32.dp)
+                    .graphicsLayer {
+                        scaleX = iconScale.value
+                        scaleY = iconScale.value
+                    }
             )
         }
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start,
-        ) {
+        Spacer(Modifier.width(16.dp))
+        Column {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
+                color = MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = if (enabled) 1f else 0.6f
+                ),
             )
-            subtitle?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 2,
-                )
-            }
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                    alpha = if (enabled) 1f else 0.6f
+                ),
+            )
         }
     }
 }

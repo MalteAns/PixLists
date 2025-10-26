@@ -4,13 +4,18 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -22,25 +27,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.malteans.pixlists.app.Route
+import de.malteans.legal.presentation.components.LegalsList
+import de.malteans.legal.presentation.navigation.LegalRoute
+import de.malteans.pixlists.navigation.Route
 import de.malteans.pixlists.presentation.components.CustomTopBar
 import de.malteans.pixlists.presentation.components.SnackbarManager
 import de.malteans.pixlists.presentation.settings.components.SettingsItem
 import de.malteans.pixlists.presentation.settings.components.rememberExportJsonLauncher
-import de.malteans.pixlists.presentation.settings.components.rememberImportJsonLauncher
+import de.malteans.pixlists.presentation.theme.containerColor
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import pixlists.composeapp.generated.resources.Res
-import pixlists.composeapp.generated.resources.export_failed
-import pixlists.composeapp.generated.resources.export_success
-import pixlists.composeapp.generated.resources.import_failed
-import pixlists.composeapp.generated.resources.import_success
-import pixlists.composeapp.generated.resources.settings
+import pixlists.composeapp.generated.resources.*
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -48,6 +52,7 @@ import kotlin.time.ExperimentalTime
 fun SettingsScreenRoot(
     viewModel: SettingsViewModel = koinViewModel(),
     onNavigateTo: (Route) -> Unit,
+    onNavigateToLegalRoute: (LegalRoute) -> Unit,
     openDrawer: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -58,6 +63,7 @@ fun SettingsScreenRoot(
             when (action) {
                 is SettingsAction.OpenDrawer -> openDrawer()
                 is SettingsAction.OnNavigateTo -> onNavigateTo(action.route)
+                is SettingsAction.OnNavigateToLegalRoute -> onNavigateToLegalRoute(action.legalRoute)
                 else -> viewModel.onAction(action)
             }
         },
@@ -100,21 +106,8 @@ fun SettingsScreen(
     // Import -------------------------------------------------------------------------------------
     val importSuccess = stringResource(Res.string.import_success)
     val importFailed = stringResource(Res.string.import_failed)
-    val launchImport = rememberImportJsonLauncher { result ->
-        scope.launch {
-            result
-                .onSuccess { data ->
-                    onAction(SettingsAction.OnImportData(data))
-                    SnackbarManager.showSnackbar(
-                        message = importSuccess
-                    )
-                }
-                .onFailure {
-                    SnackbarManager.showSnackbar(
-                        message = importFailed
-                    )
-                }
-        }
+    val launchImport = {
+        TODO()
     }
 
     LaunchedEffect(state.importError) {
@@ -137,28 +130,42 @@ fun SettingsScreen(
                 actions = {}
             )
         },
-    ) { pad ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(pad)
+                .verticalScroll(rememberScrollState())
+                .padding(top = 16.dp)
+                .padding(horizontal = 8.dp)
+                .padding(paddingValues)
         ) {
-            SettingsItem(
-                title = "Export Data",
-                subtitle = "Export your data as JSON file",
-                onClick = { onAction(SettingsAction.OnExportData) },
-                trailingIcon = Icons.Outlined.Download,
-            )
-            SettingsItem(
-                title = "Import Data",
-                subtitle = "Import exported data from JSON file",
-                onClick = { launchImport() },
-                trailingIcon = Icons.Outlined.Upload,
-            )
-            SettingsItem(
-                title = "Licenses",
-                subtitle = "Open source licenses used in PixLists",
-                onClick = { onAction(SettingsAction.OnNavigateTo(Route.LicensesScreen)) },
-                trailingIcon = Icons.Outlined.Info,
+            Column(
+                verticalArrangement = spacedBy(4.dp),
+                modifier = Modifier.clip(MaterialTheme.shapes.medium)
+            ) {
+                SettingsItem(
+                    title = "Export Data",
+                    description = "Export your data as JSON file",
+                    icon = Icons.Outlined.Download,
+                    onClick = { onAction(SettingsAction.OnExportData) },
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                SettingsItem(
+                    title = "Import Data",
+                    description = "Import exported data from JSON file",
+                    icon = Icons.Outlined.Upload,
+                    onClick = { launchImport() },
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Spacer(Modifier.height(16.dp))
+            LegalsList(
+                tileContainerColor = MaterialTheme.colorScheme.containerColor,
+                navigateToLegalScreen = { legalRoute ->
+                    onAction(SettingsAction.OnNavigateToLegalRoute(legalRoute))
+                },
+                modifier = Modifier.clip(MaterialTheme.shapes.medium)
             )
         }
     }

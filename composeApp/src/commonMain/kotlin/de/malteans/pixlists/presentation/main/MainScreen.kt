@@ -39,17 +39,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import de.malteans.pixlists.app.Route
+import de.malteans.pixlists.navigation.Route
 import de.malteans.pixlists.domain.PixList
 import de.malteans.pixlists.presentation.components.CustomDialog
 import de.malteans.pixlists.presentation.components.SnackbarManager
 import de.malteans.pixlists.presentation.components.customIcons.AddPixListIcon
 import de.malteans.pixlists.presentation.components.customIcons.FilledPixListIcon
 import de.malteans.pixlists.presentation.components.customIcons.OutlinedPixListIcon
-import de.malteans.pixlists.presentation.main.components.NavGraph
+import de.malteans.pixlists.navigation.NavGraph
 import de.malteans.pixlists.presentation.main.components.NavListHeader
 import de.malteans.pixlists.presentation.main.components.NewListDialog
-import de.malteans.pixlists.presentation.main.components.Screen
+import de.malteans.pixlists.presentation.main.components.CurScreen
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -79,12 +79,12 @@ fun MainScreen(
             onAdd = { name ->
                 scope.launch {
                     showNewListDialog = false
-                    viewModel.setCurScreen(Screen.LIST)
-                    navController.navigate(Route.LoadingScreen)
+                    viewModel.setCurScreen(CurScreen.LIST)
+                    navController.navigate(Route.List.Loading)
                     val id = viewModel.createPixList(name.trim())
                     viewModel.setCurPixListId(id)
                     drawerState.close()
-                    navController.navigate(Route.ListScreen(id))
+                    navController.navigate(Route.List.View(id))
                 }
             },
             invalidNames = state.allPixLists.map { it.name },
@@ -105,7 +105,7 @@ fun MainScreen(
                 IconButton(
                     onClick = {
                         if (listToDelete!!.id == state.curPixListId) {
-                            navController.navigate(Route.ListScreen(listToDelete!!.id))
+                            navController.navigate(Route.List.View(listToDelete!!.id))
                         }
                         showDeleteListDialog = false
                     }
@@ -171,6 +171,7 @@ fun MainScreen(
     ) {
         ModalNavigationDrawer(
             drawerState = drawerState,
+            gesturesEnabled = state.curScreen != CurScreen.LEGALS,
             drawerContent = {
                 ModalDrawerSheet {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -196,13 +197,13 @@ fun MainScreen(
                                     label = { Text(curPixList.name) },
                                     selected = curPixList.id == state.curPixListId,
                                     onClick = {
-                                        viewModel.setCurScreen(Screen.LIST)
+                                        viewModel.setCurScreen(CurScreen.LIST)
                                         viewModel.setCurPixListId(curPixList.id)
                                         scope.launch {
-                                            navController.navigate(Route.LoadingScreen)
+                                            navController.navigate(Route.List.Loading)
                                             drawerState.close()
-                                            navController.navigate(Route.ListScreen(curPixList.id)) {
-                                                popUpTo(Route.LoadingScreen) {
+                                            navController.navigate(Route.List.View(curPixList.id)) {
+                                                popUpTo(Route.List.Loading) {
                                                     inclusive = true
                                                 }
                                             }
@@ -223,7 +224,7 @@ fun MainScreen(
                                             onClick = {
                                                 listToDelete = curPixList
                                                 if (curPixList.id == state.curPixListId) {
-                                                    navController.navigate(Route.ListScreen(null))
+                                                    navController.navigate(Route.List.View(null))
                                                 }
                                                 showDeleteListDialog = true
                                             }
@@ -257,15 +258,15 @@ fun MainScreen(
                     NavigationDrawerItem(
                         label = { Text(stringResource(Res.string.manage_colors)) },
                         onClick = {
-                            navController.navigate(Route.ManageColorsScreen)
+                            navController.navigate(Route.Colors.Overview)
                             viewModel.setCurPixListId(null)
-                            viewModel.setCurScreen(Screen.MANAGE_COLORS)
+                            viewModel.setCurScreen(CurScreen.MANAGE_COLORS)
                             scope.launch { drawerState.close() }
                         },
-                        selected = state.curScreen == Screen.MANAGE_COLORS,
+                        selected = state.curScreen == CurScreen.MANAGE_COLORS,
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
                         icon = {
-                            if (state.curScreen == Screen.MANAGE_COLORS) {
+                            if (state.curScreen == CurScreen.MANAGE_COLORS) {
                                 Icon(
                                     imageVector = Icons.Filled.ColorLens,
                                     contentDescription = "ColorLens"
@@ -281,15 +282,15 @@ fun MainScreen(
                     NavigationDrawerItem(
                         label = { Text(stringResource(Res.string.settings)) },
                         onClick = {
-                            navController.navigate(Route.SettingsScreen)
+                            navController.navigate(Route.Settings.Overview)
                             viewModel.setCurPixListId(null)
-                            viewModel.setCurScreen(Screen.SETTINGS)
+                            viewModel.setCurScreen(CurScreen.SETTINGS)
                             scope.launch { drawerState.close() }
                         },
-                        selected = state.curScreen == Screen.SETTINGS,
+                        selected = state.curScreen == CurScreen.SETTINGS,
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
                         icon = {
-                            if (state.curScreen == Screen.SETTINGS) {
+                            if (state.curScreen == CurScreen.SETTINGS) {
                                 Icon(
                                     imageVector = Icons.Filled.Settings,
                                     contentDescription = "Settings"
@@ -308,8 +309,10 @@ fun MainScreen(
             NavGraph(
                 navController = navController,
                 openDrawer = { scope.launch { drawerState.open() } },
-                setCurScreen = { screen -> viewModel.setCurScreen(screen) },
-                setPixListId = { id -> viewModel.setCurPixListId(id) },
+                setCurState = { screen, id ->
+                    viewModel.setCurScreen(screen)
+                    viewModel.setCurPixListId(id)
+                },
             )
         }
     }

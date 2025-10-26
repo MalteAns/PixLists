@@ -1,0 +1,127 @@
+package de.malteans.pixlists.navigation
+
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.navigation
+import androidx.navigation.toRoute
+import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
+import de.malteans.legal.presentation.navigation.LegalRoute
+import de.malteans.legal.presentation.screens.ImprintScreen
+import de.malteans.legal.presentation.screens.LicensesScreen
+import de.malteans.legal.presentation.screens.PrivacyScreen
+import de.malteans.pixlists.presentation.list.ListScreenRoot
+import de.malteans.pixlists.presentation.list.LoadingScreen
+import de.malteans.pixlists.presentation.main.components.CurScreen
+import de.malteans.pixlists.presentation.manageColors.ManageColorsScreenRoot
+import de.malteans.pixlists.presentation.settings.SettingsScreenRoot
+import org.jetbrains.compose.resources.stringResource
+import pixlists.composeapp.generated.resources.Res
+import pixlists.composeapp.generated.resources.privacy_policy_path
+
+@Composable
+fun NavGraph(
+    navController: NavHostController,
+    openDrawer: () -> Unit,
+    setCurState: (CurScreen, Long?) -> Unit,
+) {
+    val setCurScreen: (CurScreen) -> Unit = { screen ->
+        setCurState(screen, null)
+    }
+    val setCurList: (Long?) -> Unit = { pixListId ->
+        setCurState(CurScreen.LIST, pixListId)
+    }
+
+    NavHost(
+        navController = navController,
+        startDestination = Route.ListNav,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None },
+    ) {
+        navigation<Route.ListNav>(
+            startDestination = Route.List.Loading
+        ) {
+            composable<Route.List.Loading> {
+                setCurScreen(CurScreen.LIST)
+                LoadingScreen(openDrawer = openDrawer)
+            }
+            composable<Route.List.View> {
+                val args = it.toRoute<Route.List.View>()
+                setCurList(args.curPixListId)
+                ListScreenRoot(
+                    openDrawer = openDrawer,
+                    curPixListId = args.curPixListId,
+                )
+            }
+        }
+        navigation<Route.ColorsNav>(
+            startDestination = Route.Colors.Overview
+        ) {
+            composable<Route.Colors.Overview> {
+                setCurScreen(CurScreen.MANAGE_COLORS)
+                ManageColorsScreenRoot(
+                    openDrawer = openDrawer
+                )
+            }
+        }
+        navigation<Route.SettingsNav>(
+            startDestination = Route.Settings.Overview
+        ) {
+            composable<Route.Settings.Overview> (
+                popEnterTransition = { slideInHorizontally { -it } },
+                exitTransition = { slideOutHorizontally { -it } },
+            ) {
+                setCurScreen(CurScreen.SETTINGS)
+                SettingsScreenRoot(
+                    openDrawer = openDrawer,
+                    onNavigateTo = navController::navigate,
+                    onNavigateToLegalRoute = navController::navigate,
+                )
+            }
+        }
+        navigation<Route.LegalNav>(
+            startDestination = LegalRoute.Imprint
+        ) {
+            composable<LegalRoute.Imprint> {
+                setCurScreen(CurScreen.LEGALS)
+                ImprintScreen(
+                    navigateBack = { navController.popBackStack() },
+                )
+            }
+            composable<LegalRoute.Privacy> {
+                setCurScreen(CurScreen.LEGALS)
+                var htmlData by remember { mutableStateOf<String?>(null) }
+                val privacyPath = stringResource(Res.string.privacy_policy_path)
+                LaunchedEffect(Unit) {
+                    htmlData = Res.readBytes(privacyPath).decodeToString()
+                }
+                PrivacyScreen(
+                    htmlData = htmlData,
+                    navigateBack = { navController.popBackStack() },
+                )
+            }
+            composable<LegalRoute.Licenses> {
+                setCurScreen(CurScreen.LEGALS)
+                val libraries by produceLibraries {
+                    Res.readBytes("files/aboutlibraries.json").decodeToString()
+                }
+                LicensesScreen(
+                    libraries = libraries,
+                    navigateBack = { navController.popBackStack() },
+                )
+            }
+        }
+    }
+}
