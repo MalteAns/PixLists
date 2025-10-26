@@ -12,11 +12,9 @@ import platform.Foundation.NSUserDomainMask
 actual class DatabaseFactory {
     actual fun create(): RoomDatabase.Builder<PixDatabase> {
         val dbFilePath = documentDirectory() + "/${PixDatabase.DB_NAME}"
-        return Room.databaseBuilder<PixDatabase>(
-            name = dbFilePath,
-        )
+        return Room.databaseBuilder<PixDatabase>(dbFilePath)
             .addMigrations(
-                PixDatabase.Companion.MIGRATION1_2,
+                PixDatabase.MIGRATION1_2,
             )
     }
 
