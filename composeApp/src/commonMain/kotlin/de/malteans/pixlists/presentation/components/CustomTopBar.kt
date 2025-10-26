@@ -2,68 +2,53 @@ package de.malteans.pixlists.presentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
+import pixlists.composeapp.generated.resources.Res
+import pixlists.composeapp.generated.resources.app_icon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomTopBar(
     title: @Composable () -> Unit,
     navigationIcon: @Composable (() -> Unit)? = null,
-    actions: @Composable RowScope.() -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
     openDrawer: () -> Unit,
 ) {
     CenterAlignedTopAppBar(
         title = title,
         actions = actions,
         navigationIcon = navigationIcon ?: {
-            IconButton(
-                onClick = {
-                    openDrawer()
-                }
-            ) {
-                val painter = AppIconPainter()
-                if (painter != null) {
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                    ) {
-                        Image(
-                            painter = painter,
-                            contentDescription = "Menu",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier
-                                .scale(1.5f)
-                        )
-                    }
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Menu,
+            IconButton(openDrawer) {
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.app_icon),
                         contentDescription = "Menu",
-                        tint = MaterialTheme.colorScheme.onPrimary,
+                        contentScale = ContentScale.Inside,
                     )
                 }
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors().copy(
+        colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
         ),
         modifier = Modifier
-            .clip(RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 16.dp, bottomEnd = 16.dp))
+            .clip(
+                MaterialTheme.shapes.extraLarge.copy(
+                    topStart = CornerSize(0),
+                    topEnd = CornerSize(0),
+                )
+            )
     )
 }

@@ -1,5 +1,9 @@
 package de.malteans.pixlists.presentation.main
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -13,52 +17,27 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import de.malteans.pixlists.navigation.Route
 import de.malteans.pixlists.domain.PixList
+import de.malteans.pixlists.navigation.NavGraph
+import de.malteans.pixlists.navigation.Route
 import de.malteans.pixlists.presentation.components.CustomDialog
 import de.malteans.pixlists.presentation.components.SnackbarManager
 import de.malteans.pixlists.presentation.components.customIcons.AddPixListIcon
 import de.malteans.pixlists.presentation.components.customIcons.FilledPixListIcon
 import de.malteans.pixlists.presentation.components.customIcons.OutlinedPixListIcon
-import de.malteans.pixlists.navigation.NavGraph
+import de.malteans.pixlists.presentation.main.components.CurScreen
+import de.malteans.pixlists.presentation.main.components.CustomDrawerItem
 import de.malteans.pixlists.presentation.main.components.NavListHeader
 import de.malteans.pixlists.presentation.main.components.NewListDialog
-import de.malteans.pixlists.presentation.main.components.CurScreen
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import pixlists.composeapp.generated.resources.Res
-import pixlists.composeapp.generated.resources.confirm_delete_desc
-import pixlists.composeapp.generated.resources.delete_pixlist
-import pixlists.composeapp.generated.resources.manage_colors
-import pixlists.composeapp.generated.resources.new_pixlist
-import pixlists.composeapp.generated.resources.settings
+import pixlists.composeapp.generated.resources.*
 
 @Composable
 fun MainScreen(
@@ -191,34 +170,28 @@ fun MainScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     LazyColumn(modifier = Modifier.weight(1f)) {
-                        items(state.allPixLists) { curPixList ->
-                            if (!(curPixList.name.matches(Regex("^\\(.*\\)$")) && !showHiddenLists)) {
-                                NavigationDrawerItem(
-                                    label = { Text(curPixList.name) },
-                                    selected = curPixList.id == state.curPixListId,
-                                    onClick = {
-                                        viewModel.setCurScreen(CurScreen.LIST)
-                                        viewModel.setCurPixListId(curPixList.id)
-                                        scope.launch {
-                                            navController.navigate(Route.List.Loading)
-                                            drawerState.close()
-                                            navController.navigate(Route.List.View(curPixList.id)) {
-                                                popUpTo(Route.List.Loading) {
-                                                    inclusive = true
-                                                }
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        items(
+                            items = state.allPixLists
+                                .filterNot { it.name.matches(Regex("^\\(.*\\)$")) && !showHiddenLists }
+                        ) { curPixList ->
+                            var appeared by remember { mutableStateOf(false) }
+                            LaunchedEffect(Unit) { appeared = true }
+
+                            AnimatedVisibility(
+                                visible = appeared,
+                                enter = expandVertically(
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                )
+                            ) {
+                                CustomDrawerItem(
                                     icon = {
                                         Icon(
-                                            imageVector = if (curPixList.id == state.curPixListId)
-                                                FilledPixListIcon
-                                            else
-                                                OutlinedPixListIcon,
+                                            imageVector = if (curPixList.id == state.curPixListId) FilledPixListIcon
+                                            else OutlinedPixListIcon,
                                             contentDescription = "PixList"
                                         )
                                     },
+                                    label = curPixList.name,
                                     badge = {
                                         IconButton(
                                             onClick = {
@@ -234,74 +207,71 @@ fun MainScreen(
                                                 contentDescription = "Delete PixList"
                                             )
                                         }
+                                    },
+                                    selected = curPixList.id == state.curPixListId,
+                                    onClick = {
+                                        viewModel.setCurScreen(CurScreen.LIST)
+                                        viewModel.setCurPixListId(curPixList.id)
+                                        scope.launch {
+                                            navController.navigate(Route.List.Loading)
+                                            drawerState.close()
+                                            navController.navigate(Route.List.View(curPixList.id)) {
+                                                popUpTo(Route.List.Loading) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        }
                                     }
                                 )
                             }
                         }
                         item {
-                            NavigationDrawerItem(
-                                label = { Text(stringResource(Res.string.new_pixlist)) },
-                                onClick = {
-                                    showNewListDialog = true
-                                },
-                                selected = false,
-                                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                            CustomDrawerItem(
                                 icon = {
                                     Icon(
                                         imageVector = AddPixListIcon,
                                         contentDescription = "Add PixList"
                                     )
-                                }
+                                },
+                                label = stringResource(Res.string.new_pixlist),
+                                selected = false,
+                                onClick = { showNewListDialog = true }
                             )
                         }
                     }
-                    NavigationDrawerItem(
-                        label = { Text(stringResource(Res.string.manage_colors)) },
+                    CustomDrawerItem(
+                        icon = {
+                            Icon(
+                                imageVector = if (state.curScreen == CurScreen.MANAGE_COLORS) Icons.Filled.ColorLens
+                                    else Icons.Outlined.ColorLens,
+                                contentDescription = "ColorLens"
+                            )
+                        },
+                        label = stringResource(Res.string.manage_colors),
+                        selected = state.curScreen == CurScreen.MANAGE_COLORS,
                         onClick = {
                             navController.navigate(Route.Colors.Overview)
                             viewModel.setCurPixListId(null)
                             viewModel.setCurScreen(CurScreen.MANAGE_COLORS)
                             scope.launch { drawerState.close() }
-                        },
-                        selected = state.curScreen == CurScreen.MANAGE_COLORS,
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-                        icon = {
-                            if (state.curScreen == CurScreen.MANAGE_COLORS) {
-                                Icon(
-                                    imageVector = Icons.Filled.ColorLens,
-                                    contentDescription = "ColorLens"
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Outlined.ColorLens,
-                                    contentDescription = "ColorLens"
-                                )
-                            }
                         }
                     )
-                    NavigationDrawerItem(
-                        label = { Text(stringResource(Res.string.settings)) },
+                    CustomDrawerItem(
+                        icon = {
+                            Icon(
+                                imageVector = if (state.curScreen == CurScreen.SETTINGS) Icons.Filled.Settings
+                                else Icons.Outlined.Settings,
+                                contentDescription = "Settings"
+                            )
+                        },
+                        label = stringResource(Res.string.settings),
+                        selected = state.curScreen == CurScreen.SETTINGS,
                         onClick = {
                             navController.navigate(Route.Settings.Overview)
                             viewModel.setCurPixListId(null)
                             viewModel.setCurScreen(CurScreen.SETTINGS)
                             scope.launch { drawerState.close() }
                         },
-                        selected = state.curScreen == CurScreen.SETTINGS,
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-                        icon = {
-                            if (state.curScreen == CurScreen.SETTINGS) {
-                                Icon(
-                                    imageVector = Icons.Filled.Settings,
-                                    contentDescription = "Settings"
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Outlined.Settings,
-                                    contentDescription = "Settings"
-                                )
-                            }
-                        }
                     )
                 }
             },

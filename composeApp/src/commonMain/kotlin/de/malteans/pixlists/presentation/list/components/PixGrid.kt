@@ -86,6 +86,7 @@ fun PixGrid(
                                     } else {
                                         val date = LocalDate(2025, monthNumber, day)
                                         val pixCategories = entries.getOrElse(date) { emptyList() }
+
                                         PixCellCanvas(
                                             categories = pixCategories,
                                             isToday = date == today,

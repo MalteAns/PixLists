@@ -1,50 +1,35 @@
 package de.malteans.pixlists.presentation.list
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.*
+import androidx.compose.animation.core.EaseOutBack
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.malteans.pixlists.domain.PixCategory
 import de.malteans.pixlists.presentation.components.CustomTopBar
-import de.malteans.pixlists.presentation.components.SnackbarManager
-import de.malteans.pixlists.presentation.list.components.CategoryDialog
-import de.malteans.pixlists.presentation.list.components.CategoryList
-import de.malteans.pixlists.presentation.list.components.EntryDialog
-import de.malteans.pixlists.presentation.list.components.ListStatus
-import de.malteans.pixlists.presentation.list.components.PixGrid
-import de.malteans.pixlists.presentation.list.components.RenamePixListDialog
-import kotlinx.coroutines.launch
+import de.malteans.pixlists.presentation.list.components.*
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import pixlists.composeapp.generated.resources.Res
-import pixlists.composeapp.generated.resources.loading
 import pixlists.composeapp.generated.resources.no_pixlist_selected
-import pixlists.composeapp.generated.resources.select_pixlist_desc
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -89,8 +74,6 @@ fun ListScreen(
     state: ListState,
     onAction: (ListAction) -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
-
 //    BackHandler {
 //        viewModel.undoLastAction()
 //    }
@@ -102,12 +85,19 @@ fun ListScreen(
     if (showEntryDialog) {
         val startDate: LocalDate? = entryToEdit
         val curCategories: List<PixCategory> = curEntryCategories
+
+        val onDismiss = {
+            showEntryDialog = false
+            entryToEdit = null
+            curEntryCategories = emptyList()
+        }
+
         EntryDialog(
             categories = state.curCategories,
-            onDismiss = { showEntryDialog = false },
+            onDismiss = onDismiss,
             onSubmit = { date, categories ->
                 onAction(ListAction.SetPixEntry(date, categories))
-                showEntryDialog = false
+                onDismiss()
             },
             startDate = startDate
                 ?: Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
@@ -173,44 +163,44 @@ fun ListScreen(
         topBar = {
             CustomTopBar(
                 title = {
-                    if (state.curPixList != null) {
+                    AnimatedVisibility(
+                        visible = state.curPixList != null,
+                        enter = scaleIn(tween(easing = EaseOutBack)),
+                    ) {
                         Text(
-                            text = state.curPixList.name,
-                            modifier = Modifier
-                                .clickable { showRenameDialog = true }
+                            text = state.curPixList?.name ?: "",
                         )
                     }
                 },
                 actions = {
-                    val RES_SELECT_PIXLIST_DESC = stringResource(Res.string.select_pixlist_desc)
-                    IconButton(
-                        onClick = {
-                            if (state.curPixList != null  && state.curCategories.isNotEmpty()) {
-                                showEntryDialog = true
-                            } else {
-                                scope.launch {
-                                    SnackbarManager.showSnackbar(
-                                        message = RES_SELECT_PIXLIST_DESC,
-                                        duration = SnackbarDuration.Short,
-                                        withDismissAction = true
-                                    )
-                                }
-                            }
-                        }
+                    AnimatedVisibility(
+                        visible = state.curPixList != null,
+                        enter = scaleIn(tween(easing = EaseOutBack)),
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.AddCircle,
-                            contentDescription = "Add Entry",
-                            tint = if (state.curCategories.isNotEmpty() && state.listStatus == ListStatus.OPENED) {
-                                MaterialTheme.colorScheme.onSurface
-                            } else {
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                            }
-                        )
+                        IconButton({ showRenameDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Rename PixList",
+                            )
+                        }
                     }
                 },
                 openDrawer = { onAction(ListAction.OpenDrawer) },
             )
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = state.curPixList != null  && state.curCategories.isNotEmpty(),
+                enter = slideIn(tween(500, easing = EaseOutBack)) { IntOffset(it.width, it.height) },
+                exit = slideOut(tween(500, easing = EaseOutBack)) { IntOffset(it.width, it.height) },
+            ) {
+                FloatingActionButton({ showEntryDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Entry",
+                    )
+                }
+            }
         }
     ) { pad ->
         Box (
@@ -219,19 +209,10 @@ fun ListScreen(
                 .padding(start = 8.dp, end = 4.dp, bottom = 16.dp)
         ) {
             when {
-                (state.listStatus == ListStatus.LOADING) -> {
-                    Column (
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(stringResource(Res.string.loading))
-                    }
-                }
-                (state.listStatus == ListStatus.OPENED && state.curPixList != null) -> {
+                (state.listStatus == ListStatus.LOADING || state.curPixList != null) -> {
                     Row {
                         PixGrid(
-                            entries = state.curPixList.entries,
+                            entries = state.curPixList?.entries ?: emptyMap(),
                             enabled = state.curCategories.isNotEmpty(),
                             onEntryEdit = { date, categories ->
                                 entryToEdit = date
@@ -242,7 +223,7 @@ fun ListScreen(
                         )
                         // Categories -----------------------------------------------------------------
                         CategoryList(
-                            state.curCategories,
+                            curCategories = state.curCategories,
                             onEditCategory = { category ->
                                 categoryToEdit = category
                                 showCategoryDialog = true
@@ -256,16 +237,32 @@ fun ListScreen(
                             },
                             modifier = Modifier
                                 .weight(0.2f)
+                                .padding(bottom = 64.dp)
+                        )
+                    }
+                    AnimatedVisibility(
+                        visible = state.listStatus != ListStatus.OPENED,
+                        enter = EnterTransition.None,
+                        exit = fadeOut(),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onTap = { /* Consume tap to prevent clicks "through" this box */ }
+                                    )
+                                }
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                                .fillMaxSize()
                         )
                     }
                 }
                 else -> {
-                    Column (
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(stringResource(Res.string.no_pixlist_selected))
+                    Box(Modifier.fillMaxSize()) {
+                        Text(
+                            text = stringResource(resource = Res.string.no_pixlist_selected),
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     }
                 }
             }

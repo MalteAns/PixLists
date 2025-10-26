@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.malteans.pixlists.domain.PixColor
 import de.malteans.pixlists.domain.PixRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -58,7 +60,7 @@ class ManageColorsViewModel(
     }
 
     private fun deleteUnusedColors() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val amount = repository.deleteUnusedColors()
             println(amount)
         }
@@ -66,13 +68,13 @@ class ManageColorsViewModel(
 
     // Color DB operations
     private fun addColor(name: String, red: Float, green: Float, blue: Float) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.createColor(name, red, green, blue)
         }
     }
 
     private fun updateColor(colorToEdit: PixColor, newName: String?, newRgb: List<Float>?) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (newName != null) {
                 repository.renameColor(colorToEdit.id, newName)
             }
@@ -83,7 +85,7 @@ class ManageColorsViewModel(
     }
 
     private fun deleteColor(color: PixColor) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.deleteColorById(color.id)
         }
     }

@@ -1,13 +1,15 @@
 package de.malteans.pixlists.presentation.list.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOutBack
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -17,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -42,8 +45,35 @@ fun PixCellCanvas(
     val errorColor = MaterialTheme.colorScheme.error
 
     val interactionSource = remember { MutableInteractionSource() }
+
+    val animatedScale = Animatable(1f)
+    var categoriesState by remember { mutableStateOf(categories) }
+
+    LaunchedEffect(Unit) {
+        animatedScale.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(200, easing = EaseOutBack),
+        )
+    }
+
+    LaunchedEffect(categories) {
+        animatedScale.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(100)
+        )
+        categoriesState = categories
+        animatedScale.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(200, easing = EaseOutBack),
+        )
+    }
+
     Canvas(
         modifier = modifier
+            .graphicsLayer {
+                scaleX = animatedScale.value
+                scaleY = animatedScale.value
+            }
             .size(size)
             .clickable(
                 enabled = enabled,
@@ -76,7 +106,7 @@ fun PixCellCanvas(
         val contentW = (contentRight - contentLeft).coerceAtLeast(0f)
         val contentH = (contentBottom - contentTop).coerceAtLeast(0f)
 
-        fun colorOf(i: Int): Color = categories.getOrNull(i)?.color?.toColor() ?: errorColor
+        fun colorOf(i: Int): Color = categoriesState.getOrNull(i)?.color?.toColor() ?: errorColor
 
         val contentRoundRect = RoundRect(
             left = contentLeft, top = contentTop,
@@ -96,7 +126,7 @@ fun PixCellCanvas(
             )
         }
 
-        when (categories.size.coerceAtMost(4)) {
+        when (categoriesState.size.coerceAtMost(4)) {
             0 -> {
                 // EMPTY → outline on CONTENT rect so it matches the filled size
                 drawRoundRect(

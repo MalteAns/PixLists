@@ -4,15 +4,11 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
@@ -51,7 +47,7 @@ fun NavGraph(
         popExitTransition = { ExitTransition.None },
     ) {
         navigation<Route.ListNav>(
-            startDestination = Route.List.Loading
+            startDestination = Route.List.View(null)
         ) {
             composable<Route.List.Loading> {
                 setCurScreen(CurScreen.LIST)
@@ -92,12 +88,14 @@ fun NavGraph(
             }
         }
         navigation<Route.LegalNav>(
-            startDestination = LegalRoute.Imprint
+            startDestination = LegalRoute.Imprint,
+            enterTransition = { slideInHorizontally { it } },
+            popExitTransition = { slideOutHorizontally { it } },
         ) {
             composable<LegalRoute.Imprint> {
                 setCurScreen(CurScreen.LEGALS)
                 ImprintScreen(
-                    navigateBack = { navController.popBackStack() },
+                    navigateBack = navController::popBackStack,
                 )
             }
             composable<LegalRoute.Privacy> {
@@ -109,7 +107,7 @@ fun NavGraph(
                 }
                 PrivacyScreen(
                     htmlData = htmlData,
-                    navigateBack = { navController.popBackStack() },
+                    navigateBack = navController::popBackStack,
                 )
             }
             composable<LegalRoute.Licenses> {
@@ -119,7 +117,7 @@ fun NavGraph(
                 }
                 LicensesScreen(
                     libraries = libraries,
-                    navigateBack = { navController.popBackStack() },
+                    navigateBack = navController::popBackStack,
                 )
             }
         }

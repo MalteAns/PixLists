@@ -7,16 +7,10 @@ import de.malteans.pixlists.domain.PixColor
 import de.malteans.pixlists.domain.PixList
 import de.malteans.pixlists.domain.PixRepository
 import de.malteans.pixlists.presentation.list.components.ListStatus
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
@@ -78,7 +72,7 @@ class ListViewModel(
     private fun setPixListId(pixListId: Long?) {
         _curPixListId.update { pixListId }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _state.update{ state -> state.copy(
                 invalideNames = repository.getAllPixListsWithoutData().first()
                     .map { it.name },
@@ -88,7 +82,7 @@ class ListViewModel(
     }
 
     private fun updatePixListName(newName: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.renameList(_curPixListId.value!!, newName)
             _state.value = _state.value.copy(
                 invalideNames = repository.getAllPixListsWithoutData().first().map { it.name },
@@ -98,13 +92,13 @@ class ListViewModel(
 
     // PixCategory functions -------------------------------------------------
     private fun createPixCategory(name: String, color: PixColor) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.createCategory(_curPixListId.value!!, color.id, name)
         }
     }
 
     private fun updatePixCategory(category: PixCategory, newName: String?, newColor: PixColor?) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (newName != null) {
                 repository.renameCategory(category.id, newName)
             }
@@ -115,14 +109,14 @@ class ListViewModel(
     }
 
     private fun deletePixCategory(category: PixCategory) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.deleteCategoryById(category.id)
         }
     }
 
     // PixEntry functions ---------------------------------------------------
     private fun setPixEntry(date: LocalDate, categories: List<PixCategory>) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             when (categories.size) {
                 0 -> repository.deleteEntry(_curPixListId.value!!, date)
                 else -> repository.setEntry(_curPixListId.value!!, categories.map { it.id }, date)
@@ -132,7 +126,7 @@ class ListViewModel(
 
     // Update Category Order ------------------------------------------------
     private fun updateCategoryOrder(newOrder: List<Long>) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.changeCategoriesOrder(_curPixListId.value!!, newOrder)
         }
     }

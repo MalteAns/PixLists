@@ -4,37 +4,34 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import de.malteans.pixlists.domain.PixColor
 import de.malteans.pixlists.presentation.components.CustomDialog
 import de.malteans.pixlists.presentation.components.customIcons.FilledPixIcon
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
-import pixlists.composeapp.generated.resources.Res
-import pixlists.composeapp.generated.resources.add_color
-import pixlists.composeapp.generated.resources.color
-import pixlists.composeapp.generated.resources.edit_color
-import pixlists.composeapp.generated.resources.name
-import pixlists.composeapp.generated.resources.name_already_in_use
+import pixlists.composeapp.generated.resources.*
 
 @Composable
 fun ColorDialog(
@@ -45,20 +42,43 @@ fun ColorDialog(
     isEdit: Boolean = false,
     colorToEdit: PixColor? = null,
 ) {
-    var name by remember { mutableStateOf(colorToEdit?.name ?: "") }
-    var selectedHexValue by remember { mutableStateOf(colorToEdit?.toHex() ?: "#") }
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        delay(150)
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
+
+    var nameField by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = colorToEdit?.name ?: "",
+                selection = TextRange((colorToEdit?.name ?: "").length)
+            )
+        )
+    }
+    var selectedHexField by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = colorToEdit?.toHex() ?: "#",
+                selection = TextRange((colorToEdit?.toHex() ?: "#").length)
+            )
+        )
+    }
     val selectedRgbValues by remember { mutableStateOf(colorToEdit?.getRgbValues() ?: listOf(0f, 0f, 0f)) }
     val mode by remember { mutableStateOf(Mode.HEX) }
 
     var validToSave by remember { mutableStateOf(false) }
 
-    LaunchedEffect(name, selectedHexValue, selectedRgbValues, mode) {
-        validToSave = name.isNotBlank() &&
-            (!invalidNames.contains(name.trim()) xor (name.trim() == (colorToEdit?.name ?: "")) &&
-            (mode == Mode.HEX && isValidHexColor(selectedHexValue) &&
-                (!isEdit || selectedHexValue != (colorToEdit?.toHex() ?: "") || name.trim() != (colorToEdit?.name ?: "")) ||
+    LaunchedEffect(nameField.text, selectedHexField.text, selectedRgbValues, mode) {
+        validToSave = nameField.text.isNotBlank() &&
+            (!invalidNames.contains(nameField.text.trim()) xor (nameField.text.trim() == (colorToEdit?.name ?: "")) &&
+            (mode == Mode.HEX && isValidHexColor(selectedHexField.text) &&
+                (!isEdit || selectedHexField.text != (colorToEdit?.toHex() ?: "") || nameField.text.trim() != (colorToEdit?.name ?: "")) ||
             mode == Mode.RGB &&
-                (!isEdit || selectedRgbValues != (colorToEdit?.getRgbValues() ?: listOf<Float>()) || name.trim() != (colorToEdit?.name ?: ""))))
+                (!isEdit || selectedRgbValues != (colorToEdit?.getRgbValues() ?: listOf<Float>()) || nameField.text.trim() != (colorToEdit?.name ?: ""))))
     }
 
     CustomDialog(
@@ -98,9 +118,9 @@ fun ColorDialog(
             IconButton(
                 onClick = {
                     onFinish(
-                        if (name.trim() == (colorToEdit?.name ?: "")) null else name,
+                        if (nameField.text.trim() == (colorToEdit?.name ?: "")) null else nameField.text,
                         if (mode == Mode.HEX) {
-                            if (selectedHexValue == (colorToEdit?.toHex() ?: "")) null else hexToRgb(selectedHexValue)
+                            if (selectedHexField.text == (colorToEdit?.toHex() ?: "")) null else hexToRgb(selectedHexField.text)
                         } else if (mode == Mode.RGB) {
                             if (selectedRgbValues == (colorToEdit?.getRgbValues() ?: listOf<Float>())) null else selectedRgbValues
                         } else null,
@@ -117,7 +137,8 @@ fun ColorDialog(
             }
         },
     ) {
-        if (invalidNames.contains(name.trim()) && name.trim() != (colorToEdit?.name ?: "")) {
+        val focusManager = LocalFocusManager.current
+        if (invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (colorToEdit?.name ?: "")) {
             Row {
                 Icon(
                     imageVector = Icons.Default.Warning,
@@ -141,38 +162,57 @@ fun ColorDialog(
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
+                value = nameField,
+                onValueChange = { nameField = it },
+                singleLine = true,
                 label = { Text(stringResource(Res.string.name)) },
+                isError = invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (colorToEdit?.name ?: ""),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions {
+                    focusManager.moveFocus(FocusDirection.Down)
+                },
                 modifier = Modifier
-                    .fillMaxWidth(),
-                isError = invalidNames.contains(name.trim()) && name.trim() != (colorToEdit?.name ?: ""),
+                    .then(
+                        if (colorToEdit == null) Modifier.focusRequester(focusRequester)
+                        else Modifier
+                    )
+                    .fillMaxWidth()
             )
         }
         // TODO: Add mode switcher
         when (mode) {
-            Mode.HEX -> {
+            Mode.HEX -> {                
                 OutlinedTextField(
-                    value = selectedHexValue,
-                    onValueChange = {
-                        if (it.length in 1..7) {
-                            selectedHexValue = it
+                    value = selectedHexField,
+                    onValueChange = { newValue ->
+                        if (newValue.text.length in 1..7
+                            && newValue.text.startsWith("#")
+                            && newValue.text.drop(1).all { it.isDigit() || it.lowercaseChar() in 'a'..'f' }
+                        ) {
+                            selectedHexField = newValue
                         }
                     },
+                    singleLine = true,
                     label = { Text(stringResource(Res.string.color)) },
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    isError = !isValidHexColor(selectedHexValue),
+                    isError = !isValidHexColor(selectedHexField.text),
                     trailingIcon = {
-                        if (isValidHexColor(selectedHexValue)) {
-                            val tempRbgValues = hexToRgb(selectedHexValue)
+                        if (isValidHexColor(selectedHexField.text)) {
+                            val tempRbgValues = hexToRgb(selectedHexField.text)
                             Icon(
                                 imageVector = FilledPixIcon,
                                 contentDescription = "Preview",
                                 tint = Color(red = tempRbgValues[0], green = tempRbgValues[1], blue = tempRbgValues[2]),
                             )
                         }
-                    }
+                    },
+                    modifier = Modifier
+                        .then(
+                            if (colorToEdit != null) Modifier.focusRequester(focusRequester)
+                            else Modifier
+                        )
+                        .fillMaxWidth()
                 )
             }
             Mode.RGB -> {

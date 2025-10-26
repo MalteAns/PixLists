@@ -11,22 +11,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import de.malteans.pixlists.presentation.components.CustomDialog
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.Res
 import pixlists.composeapp.generated.resources.name
@@ -40,6 +35,15 @@ fun NewListDialog(
     onAdd: (String) -> Unit,
     invalidNames: List<String> = emptyList()
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        delay(150)
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
+
     var name by remember { mutableStateOf("") }
 
     CustomDialog(
@@ -77,10 +81,6 @@ fun NewListDialog(
                 )
             }
         },
-        properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = false
-        )
     ) {
         val invalid = invalidNames.contains(name.trim())
         AnimatedVisibility(
@@ -114,11 +114,13 @@ fun NewListDialog(
         ) {
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = { name = it.replace("\n", " ") },
+                singleLine = true,
                 label = { Text(stringResource(Res.string.name)) },
-                modifier = Modifier
-                    .fillMaxWidth(),
                 isError = invalid,
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .fillMaxWidth()
             )
         }
     }

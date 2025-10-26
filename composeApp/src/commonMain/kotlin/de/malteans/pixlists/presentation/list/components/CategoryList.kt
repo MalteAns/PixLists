@@ -1,12 +1,11 @@
 package de.malteans.pixlists.presentation.list.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseOutBack
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -16,12 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -81,47 +75,55 @@ fun CategoryList(
                 items = items,
                 key = { it.id }
             ) { category ->
-                ReorderableItem(
-                    state = reorderableLazyListState,
-                    key = category.id
-                ) { isDragging ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                            .clickable { onEditCategory(category) }
-                            .longPressDraggableHandle(
-                                onDragStarted = {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                },
-                                onDragStopped = {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                var appeared by remember { mutableStateOf(false) }
+                LaunchedEffect(Unit) { appeared = true }
+
+                AnimatedVisibility(
+                    visible = appeared,
+                    enter = expandVertically(tween(easing = EaseOutBack))
+                ) {
+                    ReorderableItem(
+                        state = reorderableLazyListState,
+                        key = category.id,
+                    ) { isDragging ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                                .clickable { onEditCategory(category) }
+                                .longPressDraggableHandle(
+                                    onDragStarted = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                    },
+                                    onDragStopped = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                    }
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Row {
+                                if (category.color != null) {
+                                    Icon(
+                                        imageVector = FilledPixIcon,
+                                        contentDescription = "Pix Category Icon",
+                                        tint = category.color.toColor(),
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = OutlinedPixIcon,
+                                        contentDescription = "Empty Pix",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
                                 }
-                            ),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Row {
-                            if (category.color != null) {
-                                Icon(
-                                    imageVector = FilledPixIcon,
-                                    contentDescription = "Pix Category Icon",
-                                    tint = category.color.toColor(),
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = OutlinedPixIcon,
-                                    contentDescription = "Empty Pix",
-                                    tint = MaterialTheme.colorScheme.error
+                            }
+                            Row {
+                                Text(
+                                    text = category.name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center,
                                 )
                             }
-                        }
-                        Row {
-                            Text(
-                                text = category.name,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Center,
-                            )
                         }
                     }
                 }

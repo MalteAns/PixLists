@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -11,17 +12,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -32,13 +24,7 @@ import de.malteans.pixlists.presentation.components.CustomDialog
 import de.malteans.pixlists.presentation.components.Dropdown
 import de.malteans.pixlists.presentation.components.customIcons.FilledPixIcon
 import de.malteans.pixlists.presentation.components.customIcons.OutlinedPixIcon
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.minus
-import kotlinx.datetime.number
-import kotlinx.datetime.plus
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.Res
 import pixlists.composeapp.generated.resources.category
@@ -130,6 +116,7 @@ fun EntryDialog(
                 onClick = {
                     // FIXME: Get new data
                     selectedDate = selectedDate.minus(1, DateTimeUnit.DAY)
+                    focusManager.clearFocus()
                 }
             ) {
                 Icon(
@@ -140,12 +127,16 @@ fun EntryDialog(
             Text(
                 text = selectedDate.asString(),
                 modifier = Modifier
-                    .clickable { showDatePickerDialog = true }
+                    .clickable {
+                        showDatePickerDialog = true
+                        focusManager.clearFocus()
+                    }
             )
             IconButton(
                 onClick = {
                     // FIXME: Get new data
                     selectedDate = selectedDate.plus(1, DateTimeUnit.DAY)
+                    focusManager.clearFocus()
                 }
             ) {
                 Icon(
@@ -174,7 +165,8 @@ fun EntryDialog(
                             it.removeAt(index)
                         }
                     },
-                    index = index + 1
+                    index = index + 1,
+                    initialExpanded = index == selectedCategories.lastIndex
                 )
             }
         }
@@ -188,6 +180,7 @@ fun CategoryListItem(
     changeCategory: (PixCategory) -> Unit,
     removeCategory: () -> Unit,
     index: Int,
+    initialExpanded: Boolean = false,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -196,7 +189,6 @@ fun CategoryListItem(
             .fillMaxWidth()
     ) {
         Dropdown(
-            modifier = Modifier.weight(1f),
             options = options as Map<Any, String>,
             label = "${stringResource(Res.string.category)} $index",
             onValueChanged = { changeCategory(it as PixCategory) },
@@ -218,13 +210,15 @@ fun CategoryListItem(
                         )
                     }
                 }
-            }
+            },
+            initialExpanded = initialExpanded,
+            modifier = Modifier
+                .weight(1f)
         )
         IconButton(
-            onClick = {
-                removeCategory()
-            },
+            onClick = removeCategory,
             enabled = selectedCategory != null,
+            modifier = Modifier.padding(top = 8.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Clear,

@@ -11,21 +11,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import de.malteans.pixlists.presentation.components.CustomDialog
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.Res
 import pixlists.composeapp.generated.resources.name_already_in_use
@@ -38,12 +35,28 @@ fun RenamePixListDialog(
     onDismiss: () -> Unit,
     onFinish: (String) -> Unit,
 ) {
-    var name by remember { mutableStateOf(curName) }
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        delay(150)
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
+
+    var nameField by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = curName,
+                selection = TextRange(curName.length)
+            )
+        )
+    }
 
     var validToFinish by remember { mutableStateOf(false) }
 
-    LaunchedEffect(name) {
-        validToFinish = name.isNotBlank() && !invalideNames.contains(name)
+    LaunchedEffect(nameField.text) {
+        validToFinish = nameField.text.isNotBlank() && !invalideNames.contains(nameField.text)
     }
 
     CustomDialog(
@@ -69,9 +82,7 @@ fun RenamePixListDialog(
         },
         rightIcons = {
             IconButton(
-                onClick = {
-                    onFinish(name)
-                },
+                onClick = { onFinish(nameField.text) },
                 enabled = validToFinish,
             ) {
                 Icon(
@@ -83,7 +94,7 @@ fun RenamePixListDialog(
             }
         }
     ) {
-        val invalid = invalideNames.contains(name)
+        val invalid = invalideNames.contains(nameField.text)
         AnimatedVisibility(
             visible = invalid,
             enter = expandVertically(),
@@ -108,11 +119,13 @@ fun RenamePixListDialog(
             }
         }
         OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
+            value = nameField,
+            onValueChange = { nameField = it.copy(text = it.text.replace("\n", " ")) },
+            singleLine = true,
             label = { Text("Name") },
             isError = invalid,
             modifier = Modifier
+                .focusRequester(focusRequester)
                 .fillMaxWidth()
         )
     }
