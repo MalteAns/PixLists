@@ -280,7 +280,7 @@ fun MainScreen(
         ) {
             NavGraph(
                 navController = navController,
-                openDrawer = { scope.launch(Dispatchers.IO) { drawerState.close() } },
+                openDrawer = { scope.launch(Dispatchers.IO) { drawerState.open() } },
                 setCurState = { screen, id ->
                     viewModel.setCurScreen(screen)
                     viewModel.setCurPixListId(id)
