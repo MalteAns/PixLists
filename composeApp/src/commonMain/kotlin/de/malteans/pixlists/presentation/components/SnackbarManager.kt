@@ -3,6 +3,8 @@ package de.malteans.pixlists.presentation.components
 import androidx.compose.material3.SnackbarDuration
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getString
 
 data class SnackbarValue(
     val message: String,
@@ -22,5 +24,19 @@ object SnackbarManager {
         onAction: () -> Unit = {},
     ) {
         _snackbarMessages.emit(SnackbarValue(message, actionLabel, withDismissAction, duration, onAction))
+    }
+
+    suspend fun showSnackbar(
+        message: StringResource, actionLabel: String? = null, withDismissAction: Boolean = actionLabel != null,
+        duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite,
+        onAction: () -> Unit = {},
+    ) {
+        showSnackbar(
+            message = getString(message),
+            actionLabel = actionLabel,
+            withDismissAction = withDismissAction,
+            duration = duration,
+            onAction = onAction,
+        )
     }
 }

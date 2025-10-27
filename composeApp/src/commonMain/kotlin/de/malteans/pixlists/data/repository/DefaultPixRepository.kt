@@ -213,11 +213,15 @@ class DefaultPixRepository(
         return Json.encodeToJsonElement(fullDataDto)
     }
 
-    override suspend fun importAllData(data: JsonElement) {
+    override suspend fun importAllData(data: JsonElement): Result<Unit> {
         val allCurrentColors = dao.getAllColorsWithoutUpdate().associateBy { it.name }
         val allCurrentLists = dao.getAllLists().first().associateBy { it.name }
 
-        val fullDataDto = Json.decodeFromJsonElement<JsonFullDataDto>(data)
+        val fullDataDto = try {
+            Json.decodeFromJsonElement<JsonFullDataDto>(data)
+        } catch (e: Exception) {
+            return Result.failure(IllegalArgumentException("Failed to decode import data", e))
+        }
         val colorsMap = fullDataDto.colors.associate {
             it.name to if (it.name in allCurrentColors.keys) {
                 val currentColor = allCurrentColors[it.name]!!
@@ -237,7 +241,7 @@ class DefaultPixRepository(
                 categoryDto.name to dao.upsertCategory(categoryDto.toEntity(
                     listId = listId,
                     colorId = colorsMap[categoryDto.colorName]
-                        ?: throw IllegalStateException("Color '${categoryDto.colorName}' not found for category '${categoryDto.name}' in list '${listDto.name}'"),
+                        ?: return Result.failure(IllegalStateException("Color '${categoryDto.colorName}' not found for category '${categoryDto.name}' in list '${listDto.name}'")),
                 ))
             }
             listDto.entries.forEach { entryDto ->
@@ -247,10 +251,11 @@ class DefaultPixRepository(
                         listId = listId,
                         date = date,
                         categoryId = categoriesMap[categoryName]
-                            ?: throw IllegalStateException("Category '$categoryName' not found for entry on $date in list '${listDto.name}'")
+                            ?: return Result.failure(IllegalStateException("Category '$categoryName' not found for entry on $date in list '${listDto.name}'")),
                     ))
                 }
             }
         }
+        return Result.success(Unit)
     }
 }

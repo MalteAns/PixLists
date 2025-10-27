@@ -12,5 +12,5 @@ sealed interface SettingsAction {
     data object OnExportData : SettingsAction
     data object ResetExportData : SettingsAction
     data class OnImportData(val data: JsonElement) : SettingsAction
-    data object ClearImportError : SettingsAction
+    data object ClearImportFeedback : SettingsAction
 }

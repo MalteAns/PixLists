@@ -27,12 +27,12 @@ class SettingsViewModel(
         when (action) {
             is SettingsAction.OnExportData -> {
                 _state.update { it.copy(
-                    isLoading = true,
+                    exportInProgress = true,
                 ) }
-                viewModelScope.launch(Dispatchers.Main) {
+                viewModelScope.launch(Dispatchers.Default) {
                     val exportData = repository.exportAllData()
                     _state.update { it.copy(
-                        isLoading = false,
+                        exportInProgress = false,
                         exportData = exportData
                     ) }
                 }
@@ -40,23 +40,27 @@ class SettingsViewModel(
             is SettingsAction.ResetExportData -> _state.update { it.copy(exportData = null) }
             is SettingsAction.OnImportData -> {
                 _state.update { it.copy(
-                    isLoading = true,
+                    importInProgress = true,
                 ) }
-                viewModelScope.launch(Dispatchers.Main) {
-                    try {
-                        repository.importAllData(action.data)
-                    } catch (e: IllegalStateException) {
-                        _state.update { it.copy(
-                            importError = "Import failed: ${e.message}",
-                        ) }
-                    } finally {
-                        _state.update { it.copy(
-                            isLoading = false,
-                        ) }
-                    }
+                viewModelScope.launch(Dispatchers.Default) {
+                    repository.importAllData(action.data)
+                        .onSuccess {
+                            _state.update { it.copy(
+                                importSuccess = true,
+                                importError = null,
+                                importInProgress = false,
+                            ) }
+                        }
+                        .onFailure { error ->
+                            _state.update { it.copy(
+                                importError = error.message ?: "Unknown error",
+                                importSuccess = false,
+                                importInProgress = false,
+                            ) }
+                        }
                 }
             }
-            is SettingsAction.ClearImportError -> _state.update { it.copy(importError = null) }
+            is SettingsAction.ClearImportFeedback -> _state.update { it.copy(importError = null, importSuccess = false) }
             else -> throw NotImplementedError("Action $action not implemented in ViewModel")
         }
     }

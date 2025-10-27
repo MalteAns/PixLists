@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,6 +26,7 @@ fun SettingsItem(
     title: String,
     description: String,
     icon: ImageVector,
+    loading: Boolean = false,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     enabled: Boolean = true,
@@ -50,12 +52,12 @@ fun SettingsItem(
             )
             .padding(16.dp)
     ) {
-        var iconState by remember { mutableStateOf(icon) }
+        var iconState by remember { mutableStateOf<ImageVector?>(icon) }
         val iconScale = remember { Animatable(1f) }
 
-        LaunchedEffect(icon) {
+        LaunchedEffect(icon, loading) {
             iconScale.animateTo(0f, animationSpec = tween(150))
-            iconState = icon
+            iconState = icon.takeUnless { loading }
             iconScale.animateTo(1f, animationSpec = tween(150, easing = EaseOutBack))
         }
 
@@ -66,19 +68,31 @@ fun SettingsItem(
                 .size(32.dp)
                 .fillMaxHeight()
         ) {
-            Icon(
-                imageVector = iconState,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                    alpha = if (enabled) 1f else 0.6f
-                ),
-                modifier = Modifier
-                    .size(32.dp)
-                    .graphicsLayer {
-                        scaleX = iconScale.value
-                        scaleY = iconScale.value
-                    }
-            )
+            iconState?.let { imageVector ->
+                Icon(
+                    imageVector = imageVector,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                        alpha = if (enabled) 1f else 0.6f
+                    ),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .graphicsLayer {
+                            scaleX = iconScale.value
+                            scaleY = iconScale.value
+                        }
+                )
+            } ?: run {
+                CircularProgressIndicator(
+                    strokeWidth = 3.dp,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .graphicsLayer {
+                            scaleX = iconScale.value
+                            scaleY = iconScale.value
+                        }
+                )
+            }
         }
         Spacer(Modifier.width(16.dp))
         Column {

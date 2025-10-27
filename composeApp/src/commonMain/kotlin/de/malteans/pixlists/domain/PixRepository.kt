@@ -53,5 +53,5 @@ interface PixRepository {
     // Import/Export Operations -------------------------------------------
     suspend fun exportAllData(): JsonElement
 
-    suspend fun importAllData(data: JsonElement)
+    suspend fun importAllData(data: JsonElement): Result<Unit>
 }
