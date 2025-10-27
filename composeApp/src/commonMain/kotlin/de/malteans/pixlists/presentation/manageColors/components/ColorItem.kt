@@ -46,13 +46,11 @@ fun ColorItem(
                 style = MaterialTheme.typography.bodySmall
             )
         }
-//        if (uses > 0) {
         Column {
             Text(
                 text = "$count",
                 style = MaterialTheme.typography.bodySmall
             )
         }
-//        }
     }
 }

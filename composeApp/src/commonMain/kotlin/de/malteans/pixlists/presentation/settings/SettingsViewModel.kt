@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.malteans.pixlists.domain.PixRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -30,7 +29,7 @@ class SettingsViewModel(
                 _state.update { it.copy(
                     isLoading = true,
                 ) }
-                viewModelScope.launch(Dispatchers.IO) {
+                viewModelScope.launch(Dispatchers.Main) {
                     val exportData = repository.exportAllData()
                     _state.update { it.copy(
                         isLoading = false,
@@ -43,7 +42,7 @@ class SettingsViewModel(
                 _state.update { it.copy(
                     isLoading = true,
                 ) }
-                viewModelScope.launch(Dispatchers.IO) {
+                viewModelScope.launch(Dispatchers.Main) {
                     try {
                         repository.importAllData(action.data)
                     } catch (e: IllegalStateException) {

@@ -34,6 +34,8 @@ import de.malteans.pixlists.presentation.main.components.CurScreen
 import de.malteans.pixlists.presentation.main.components.CustomDrawerItem
 import de.malteans.pixlists.presentation.main.components.NavListHeader
 import de.malteans.pixlists.presentation.main.components.NewListDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -56,7 +58,7 @@ fun MainScreen(
         NewListDialog(
             onDismiss = { showNewListDialog = false },
             onAdd = { name ->
-                scope.launch {
+                scope.launch(Dispatchers.Main) {
                     showNewListDialog = false
                     viewModel.setCurScreen(CurScreen.LIST)
                     navController.navigate(Route.List.Loading)
@@ -157,7 +159,7 @@ fun MainScreen(
                     NavListHeader(
                         onLongClick = {
                             showHiddenLists = !showHiddenLists
-                            scope.launch {
+                            scope.launch(Dispatchers.IO) {
                                 SnackbarManager.showSnackbar(
                                     message = "Hidden lists are now ${if (showHiddenLists) "visible" else "hidden"}",
                                     actionLabel = "Undo",
@@ -212,7 +214,7 @@ fun MainScreen(
                                     onClick = {
                                         viewModel.setCurScreen(CurScreen.LIST)
                                         viewModel.setCurPixListId(curPixList.id)
-                                        scope.launch {
+                                        scope.launch(Dispatchers.Main) {
                                             navController.navigate(Route.List.Loading)
                                             drawerState.close()
                                             navController.navigate(Route.List.View(curPixList.id)) {
@@ -253,7 +255,7 @@ fun MainScreen(
                             navController.navigate(Route.Colors.Overview)
                             viewModel.setCurPixListId(null)
                             viewModel.setCurScreen(CurScreen.MANAGE_COLORS)
-                            scope.launch { drawerState.close() }
+                            scope.launch(Dispatchers.IO) { drawerState.close() }
                         }
                     )
                     CustomDrawerItem(
@@ -270,7 +272,7 @@ fun MainScreen(
                             navController.navigate(Route.Settings.Overview)
                             viewModel.setCurPixListId(null)
                             viewModel.setCurScreen(CurScreen.SETTINGS)
-                            scope.launch { drawerState.close() }
+                            scope.launch(Dispatchers.IO) { drawerState.close() }
                         },
                     )
                 }
@@ -278,7 +280,7 @@ fun MainScreen(
         ) {
             NavGraph(
                 navController = navController,
-                openDrawer = { scope.launch { drawerState.open() } },
+                openDrawer = { scope.launch(Dispatchers.IO) { drawerState.close() } },
                 setCurState = { screen, id ->
                     viewModel.setCurScreen(screen)
                     viewModel.setCurPixListId(id)

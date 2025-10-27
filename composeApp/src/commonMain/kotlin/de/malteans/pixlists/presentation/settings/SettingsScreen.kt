@@ -30,15 +30,24 @@ import de.malteans.pixlists.navigation.Route
 import de.malteans.pixlists.presentation.components.CustomTopBar
 import de.malteans.pixlists.presentation.components.SnackbarManager
 import de.malteans.pixlists.presentation.settings.components.SettingsItem
-import de.malteans.pixlists.presentation.settings.components.rememberExportJsonLauncher
 import de.malteans.pixlists.presentation.theme.containerColor
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.dialogs.openFileSaver
+import io.github.vinceglb.filekit.readString
+import io.github.vinceglb.filekit.writeString
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import pixlists.composeapp.generated.resources.*
+import pixlists.composeapp.generated.resources.Res
+import pixlists.composeapp.generated.resources.settings
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -73,40 +82,21 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
 
     // Export -------------------------------------------------------------------------------------
-    val currentLocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-    val exportSuccess = stringResource(Res.string.export_success)
-    val exportFailed = stringResource(Res.string.export_failed)
-    val launchExport = rememberExportJsonLauncher(
-        suggestedFileName = "pixlists-export_${currentLocalDate.year}-${currentLocalDate.month.number}-${currentLocalDate.day}.json",
-        getData = {
-            state.exportData ?: throw IllegalStateException("Export data is null")
-        },
-    ) { success ->
-        onAction(SettingsAction.ResetExportData)
-        scope.launch {
-            SnackbarManager.showSnackbar(
-                message = if (success) exportSuccess else exportFailed,
-                withDismissAction = true,
-            )
-        }
-    }
-
     LaunchedEffect(state.exportData) {
+        val currentLocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         if (state.exportData != null) {
-            launchExport(state.exportData)
+            val file = FileKit.openFileSaver(
+                suggestedName = "pixlists-export_${currentLocalDate.year}-${currentLocalDate.month.number}-${currentLocalDate.day}",
+                extension = "json",
+            )
+            file?.writeString(Json.encodeToString(state.exportData))
         }
     }
 
     // Import -------------------------------------------------------------------------------------
-    val importSuccess = stringResource(Res.string.import_success)
-    val importFailed = stringResource(Res.string.import_failed)
-    val launchImport = {
-        TODO()
-    }
-
     LaunchedEffect(state.importError) {
         if (state.importError != null) {
-            scope.launch {
+            scope.launch(Dispatchers.IO) {
                 SnackbarManager.showSnackbar(
                     message = state.importError
                 )
@@ -140,15 +130,20 @@ fun SettingsScreen(
                     description = "Export your data as JSON file",
                     icon = Icons.Outlined.Download,
                     onClick = { onAction(SettingsAction.OnExportData) },
-                    enabled = false,
                     modifier = Modifier.fillMaxWidth()
                 )
                 SettingsItem(
                     title = "Import Data",
                     description = "Import exported data from JSON file",
                     icon = Icons.Outlined.Upload,
-                    onClick = { launchImport() },
-                    enabled = false,
+                    onClick = {
+                        scope.launch(Dispatchers.Main) {
+                            val file = FileKit.openFilePicker(type = FileKitType.File("application/json"))
+                                ?: return@launch
+                            val jsonData = Json.parseToJsonElement(file.readString())
+                            onAction(SettingsAction.OnImportData(jsonData))
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
