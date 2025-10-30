@@ -107,9 +107,9 @@ android {
         applicationId = "de.malteans.pixlists"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 3412110
-        versionName = "1.1.0"
-        versionNameSuffix = "-beta"
+        versionCode = 1
+        versionName = "1.0.0"
+        versionNameSuffix = "-beta1"
     }
     packaging {
         resources {
@@ -118,7 +118,8 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
     }
     compileOptions {
