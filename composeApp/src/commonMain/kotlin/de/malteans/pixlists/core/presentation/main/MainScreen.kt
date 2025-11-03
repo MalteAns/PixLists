@@ -28,7 +28,7 @@ import de.malteans.pixlists.core.presentation.components.SnackbarManager
 import de.malteans.pixlists.core.presentation.components.customIcons.AddPixListIcon
 import de.malteans.pixlists.core.presentation.components.customIcons.FilledPixListIcon
 import de.malteans.pixlists.core.presentation.components.customIcons.OutlinedPixListIcon
-import de.malteans.pixlists.core.presentation.main.components.CurScreen
+import de.malteans.pixlists.core.presentation.main.components.*
 import de.malteans.pixlists.navigation.NavGraph
 import de.malteans.pixlists.navigation.Route
 import kotlinx.coroutines.Dispatchers
@@ -47,12 +47,19 @@ fun MainScreen(
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Open)
 
+    if (state.showStartColorDialog) {
+        StartColorsDialog(
+            onDismissRequest = { viewModel.dismissStartColorDialog() },
+            onSubmit = { colors -> viewModel.addStartColors(colors) },
+        )
+    }
+
     var showNewListDialog by remember { mutableStateOf(false) }
     var showDeleteListDialog by remember { mutableStateOf(false) }
     var listToDelete by remember { mutableStateOf<PixList?>(null) }
 
     if (showNewListDialog) {
-        _root_ide_package_.de.malteans.pixlists.core.presentation.main.components.NewListDialog(
+        NewListDialog(
             onDismiss = { showNewListDialog = false },
             onAdd = { name ->
                 scope.launch(Dispatchers.Main) {
@@ -153,7 +160,7 @@ fun MainScreen(
             drawerContent = {
                 ModalDrawerSheet {
                     Spacer(modifier = Modifier.height(8.dp))
-                    _root_ide_package_.de.malteans.pixlists.core.presentation.main.components.NavListHeader(
+                    NavListHeader(
                         onLongClick = {
                             showHiddenLists = !showHiddenLists
                             scope.launch(Dispatchers.IO) {
@@ -182,7 +189,7 @@ fun MainScreen(
                                     animationSpec = tween(400, easing = FastOutSlowInEasing)
                                 )
                             ) {
-                                _root_ide_package_.de.malteans.pixlists.core.presentation.main.components.CustomDrawerItem(
+                                CustomDrawerItem(
                                     icon = {
                                         Icon(
                                             imageVector = if (curPixList.id == state.curPixListId) FilledPixListIcon
@@ -225,7 +232,7 @@ fun MainScreen(
                             }
                         }
                         item {
-                            _root_ide_package_.de.malteans.pixlists.core.presentation.main.components.CustomDrawerItem(
+                            CustomDrawerItem(
                                 icon = {
                                     Icon(
                                         imageVector = AddPixListIcon,
@@ -238,7 +245,7 @@ fun MainScreen(
                             )
                         }
                     }
-                    _root_ide_package_.de.malteans.pixlists.core.presentation.main.components.CustomDrawerItem(
+                    CustomDrawerItem(
                         icon = {
                             Icon(
                                 imageVector = if (state.curScreen == CurScreen.MANAGE_COLORS) Icons.Filled.ColorLens
@@ -255,7 +262,7 @@ fun MainScreen(
                             scope.launch(Dispatchers.IO) { drawerState.close() }
                         }
                     )
-                    _root_ide_package_.de.malteans.pixlists.core.presentation.main.components.CustomDrawerItem(
+                    CustomDrawerItem(
                         icon = {
                             Icon(
                                 imageVector = if (state.curScreen == CurScreen.SETTINGS) Icons.Filled.Settings

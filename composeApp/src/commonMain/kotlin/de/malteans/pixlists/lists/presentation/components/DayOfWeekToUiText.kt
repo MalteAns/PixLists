@@ -1,6 +1,6 @@
 package de.malteans.pixlists.lists.presentation.components
 
-import de.malteans.pixlists.core.presentation.components.UiText
+import de.malteans.pixlists.core.presentation.util.UiText
 import kotlinx.datetime.DayOfWeek
 import pixlists.composeapp.generated.resources.*
 

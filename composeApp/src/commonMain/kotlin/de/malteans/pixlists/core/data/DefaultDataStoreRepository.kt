@@ -35,7 +35,9 @@ class DefaultDataStoreRepository(
     private fun getBoolean(key: BooleanKey): Boolean? = runBlocking {
         dataStore.data.firstOrNull()?.get(key.prefKey)
     }
-    private fun getBooleanFlow(key: BooleanKey, default: Boolean? = null): Flow<Boolean?> =
+    private fun getBooleanFlow(key: BooleanKey): Flow<Boolean?> =
+        dataStore.data.map { it[key.prefKey] }
+    private fun getBooleanFlow(key: BooleanKey, default: Boolean): Flow<Boolean> =
         dataStore.data.map { it[key.prefKey] ?: default }
     private suspend fun saveBoolean(key: BooleanKey, value: Boolean?) {
         dataStore.edit { prefs ->
@@ -44,6 +46,6 @@ class DefaultDataStoreRepository(
         }
     }
 
-    override fun getShowStartColorDialog() = getBoolean(BooleanKey.SHOW_START_COLOR_DIALOG) ?: true
+    override fun getShowStartColorDialogFlow(): Flow<Boolean> = getBooleanFlow(BooleanKey.SHOW_START_COLOR_DIALOG, true)
     override suspend fun setShowStartColorDialog(show: Boolean?) = saveBoolean(BooleanKey.SHOW_START_COLOR_DIALOG, show)
 }

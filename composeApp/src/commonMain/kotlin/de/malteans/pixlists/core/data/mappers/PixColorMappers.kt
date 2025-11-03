@@ -14,6 +14,14 @@ fun PixColorEntity.toDomain(): PixColor {
     )
 }
 
+fun PixColor.toEntity() = PixColorEntity(
+    id = id,
+    name = name,
+    red = red,
+    green = green,
+    blue = blue,
+)
+
 fun PixColorEntity.toJsonDto(): JsonColorDto {
     return JsonColorDto(
         name = this.name,

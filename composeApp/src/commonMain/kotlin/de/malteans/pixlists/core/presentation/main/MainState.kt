@@ -7,4 +7,6 @@ data class MainState(
     val allPixLists: List<PixList> = emptyList(),
     val curPixListId: Long? = null,
     val curScreen: CurScreen = CurScreen.LIST,
+
+    val showStartColorDialog: Boolean = false,
 )

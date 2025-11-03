@@ -2,6 +2,8 @@ package de.malteans.pixlists.core.presentation.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.malteans.pixlists.core.domain.DataStoreRepository
+import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.domain.PixRepository
 import de.malteans.pixlists.core.presentation.main.components.CurScreen
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +16,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val repository: PixRepository,
+    private val dataStoreRepository: DataStoreRepository,
 ): ViewModel() {
 
     private val _allPixLists = repository
@@ -23,12 +26,19 @@ class MainViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+    private val _showStartColorDialog = dataStoreRepository
+        .getShowStartColorDialogFlow()
 
     private val _state = MutableStateFlow(MainState())
 
-    val state = combine(_state, _allPixLists) { state, allPixLists ->
+    val state = combine(
+        _state,
+        _allPixLists,
+        _showStartColorDialog
+    ) { state, allPixLists, showStartColorDialog ->
         state.copy(
             allPixLists = allPixLists,
+            showStartColorDialog = showStartColorDialog,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -52,5 +62,17 @@ class MainViewModel(
 
     fun setCurScreen(screen: CurScreen) {
         _state.value = _state.value.copy(curScreen = screen)
+    }
+
+    fun dismissStartColorDialog() {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.setShowStartColorDialog(false)
+        }
+    }
+
+    fun addStartColors(colors: List<PixColor>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.createColors(colors)
+        }
     }
 }

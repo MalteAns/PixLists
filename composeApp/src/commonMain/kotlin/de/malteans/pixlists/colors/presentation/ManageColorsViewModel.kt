@@ -32,30 +32,16 @@ class ManageColorsViewModel(
 
     fun onAction(action: ManageColorsAction) {
         when (action) {
-            is ManageColorsAction.LoadDefaultColors -> loadDefaultColors()
             is ManageColorsAction.DeleteUnusedColors -> deleteUnusedColors()
             is ManageColorsAction.AddColor -> addColor(action.name, action.red, action.green, action.blue)
+            is ManageColorsAction.AddColors -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    repository.createColors(action.colors)
+                }
+            }
             is ManageColorsAction.UpdateColor -> updateColor(action.colorToEdit, action.newName, action.newRgb)
             is ManageColorsAction.DeleteColor -> deleteColor(action.colorToDelete)
             else -> throw NotImplementedError("Action not implemented in ViewModel: $action")
-        }
-    }
-
-    private fun loadDefaultColors() {
-        val invalideNames = state.value.colorList.map { it.name }
-        listOf(
-            PixColor(name = "Peach", red = 1.0f, green = 0.87f, blue = 0.77f),
-            PixColor(name = "Lemon Yellow", red = 1.0f, green = 0.97f, blue = 0.69f),
-            PixColor(name = "Mint Green", red = 0.74f, green = 0.98f, blue = 0.79f),
-            PixColor(name = "Sky Blue", red = 0.68f, green = 0.85f, blue = 0.90f),
-            PixColor(name = "Lavender", red = 0.82f, green = 0.75f, blue = 0.93f),
-            PixColor(name = "Dusty Pink", red = 0.91f, green = 0.75f, blue = 0.80f),
-            PixColor(name = "Pale Orange", red = 1.0f, green = 0.85f, blue = 0.72f),
-            PixColor(name = "Baby Blue", red = 0.68f, green = 0.90f, blue = 1.0f),
-            PixColor(name = "Blush Pink", red = 1.0f, green = 0.82f, blue = 0.86f),
-            PixColor(name = "Pastel Lilac", red = 0.91f, green = 0.78f, blue = 0.94f)
-        ).filter { it.name !in invalideNames }.forEach { color ->
-            addColor(color.name, color.red, color.green, color.blue)
         }
     }
 

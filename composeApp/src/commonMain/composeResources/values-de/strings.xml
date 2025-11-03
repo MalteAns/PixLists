@@ -50,4 +50,26 @@
     <string name="import_failed">Beim Importieren der Daten ist ein Fehler aufgetreten. Bitte versuche es erneut.</string>
 
     <string name="privacy_policy_path">files/privacy_policy_de.html</string>
+
+    <string name="add_colors">Farben hinzufügen</string>
+    <string name="select_start_colors">Startfarben wählen</string>
+
+    <!-- Start color names -->
+    <string name="peach">Pfirsich</string>
+    <string name="lemon_yellow">Zitronengelb</string>
+    <string name="mint_green">Mintgrün</string>
+    <string name="baby_blue">Babyblau</string>
+    <string name="lavender">Lavendel</string>
+    <string name="blush_pink">Zartrosa</string>
+    <string name="pale_orange">Zartorange</string>
+    <string name="soft_chartreuse">Zartes Chartreuse</string>
+    <string name="pastel_emerald">Pastell-Smaragdgrün</string>
+    <string name="sea_mist">Meeresnebel</string>
+    <string name="powder_sky">Puderhimmelblau</string>
+    <string name="periwinkle">Immergrünblau</string>
+    <string name="soft_iris">Zarte Iris</string>
+    <string name="mauve_mist">Malvennebel</string>
+    <string name="orchid_bloom">Orchideenblüte</string>
+    <string name="soft_plum">Zarte Pflaume</string>
+    <string name="golden_cream">Goldcreme</string>
 </resources>

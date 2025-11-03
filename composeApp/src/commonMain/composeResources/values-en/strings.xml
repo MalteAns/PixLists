@@ -50,4 +50,26 @@
     <string name="import_failed">An Error accrued while importing the data. Please try again.</string>
 
     <string name="privacy_policy_path">files/privacy_policy_en.html</string>
+
+    <string name="add_colors">Add colors</string>
+    <string name="select_start_colors">Select start colors</string>
+
+    <!-- Start color names -->
+    <string name="peach">Peach</string>
+    <string name="lemon_yellow">Lemon Yellow</string>
+    <string name="mint_green">Mint Green</string>
+    <string name="baby_blue">Baby Blue</string>
+    <string name="lavender">Lavender</string>
+    <string name="blush_pink">Blush Pink</string>
+    <string name="pale_orange">Pale Orange</string>
+    <string name="soft_chartreuse">Soft Chartreuse</string>
+    <string name="pastel_emerald">Pastel Emerald</string>
+    <string name="sea_mist">Sea Mist</string>
+    <string name="powder_sky">Powder Sky</string>
+    <string name="periwinkle">Periwinkle</string>
+    <string name="soft_iris">Soft Iris</string>
+    <string name="mauve_mist">Mauve Mist</string>
+    <string name="orchid_bloom">Orchid Bloom</string>
+    <string name="soft_plum">Soft Plum</string>
+    <string name="golden_cream">Golden Cream</string>
 </resources>

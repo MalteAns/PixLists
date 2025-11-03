@@ -1,4 +1,4 @@
-package de.malteans.pixlists.presentation.theme
+package de.malteans.pixlists.core.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

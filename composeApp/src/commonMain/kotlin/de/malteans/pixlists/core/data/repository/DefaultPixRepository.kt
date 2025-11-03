@@ -104,6 +104,12 @@ class DefaultPixRepository(
         return dao.upsertColor(PixColorEntity(name = name, red = red, green = green, blue = blue))
     }
 
+    override suspend fun createColors(colors: List<PixColor>) {
+        colors.forEach { color ->
+            dao.upsertColor(color.toEntity())
+        }
+    }
+
     override suspend fun deleteColorById(colorId: Long) {
         dao.deleteColorById(colorId)
     }

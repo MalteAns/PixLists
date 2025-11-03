@@ -31,6 +31,8 @@ interface PixRepository {
     // Color Operations --------------------------------------------------
     suspend fun createColor(name: String, red: Float, green: Float, blue: Float): Long
 
+    suspend fun createColors(colors: List<PixColor>)
+
     suspend fun deleteColorById(colorId: Long)
 
     suspend fun deleteUnusedColors(): Int
