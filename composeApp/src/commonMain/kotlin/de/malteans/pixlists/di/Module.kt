@@ -1,14 +1,17 @@
 package de.malteans.pixlists.di
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import de.malteans.pixlists.data.database.DatabaseFactory
-import de.malteans.pixlists.data.database.PixDatabase
-import de.malteans.pixlists.data.repository.DefaultPixRepository
-import de.malteans.pixlists.domain.PixRepository
-import de.malteans.pixlists.presentation.list.ListViewModel
-import de.malteans.pixlists.presentation.main.MainViewModel
-import de.malteans.pixlists.presentation.manageColors.ManageColorsViewModel
-import de.malteans.pixlists.presentation.settings.SettingsViewModel
+import de.malteans.datastore.createDataStore
+import de.malteans.pixlists.colors.presentation.ManageColorsViewModel
+import de.malteans.pixlists.core.data.database.DatabaseFactory
+import de.malteans.pixlists.core.data.database.PixDatabase
+import de.malteans.pixlists.core.data.repository.DefaultPixRepository
+import de.malteans.pixlists.core.domain.PixRepository
+import de.malteans.pixlists.core.presentation.main.MainViewModel
+import de.malteans.pixlists.lists.presentation.ListViewModel
+import de.malteans.pixlists.settings.presentation.SettingsViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -16,6 +19,8 @@ import org.koin.dsl.module
 expect val platformModule: Module
 
 val sharedModule = module {
+    single<DataStore<Preferences>> { createDataStore(get()) }
+
     single {
         get<DatabaseFactory>().create()
             .setDriver(BundledSQLiteDriver())
@@ -23,6 +28,7 @@ val sharedModule = module {
     }
     single { get<PixDatabase>().pixDao }
 
+    single {  }
     single<PixRepository> { DefaultPixRepository(get()) }
 
     viewModel { MainViewModel(get()) }

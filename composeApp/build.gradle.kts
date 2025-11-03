@@ -50,6 +50,8 @@ kotlin {
     sourceSets {
         
         androidMain.dependencies {
+            implementation(projects.dataStore)
+
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
 
@@ -58,6 +60,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(projects.legal)
+            implementation(projects.dataStore)
 
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -94,7 +97,7 @@ kotlin {
             implementation(libs.bundles.filekit)
         }
         iosMain.dependencies {
-
+            implementation(projects.dataStore)
         }
     }
 }

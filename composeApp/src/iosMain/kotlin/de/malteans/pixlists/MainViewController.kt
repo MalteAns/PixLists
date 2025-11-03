@@ -1,7 +1,6 @@
 package de.malteans.pixlists
 
 import androidx.compose.ui.window.ComposeUIViewController
-import de.malteans.pixlists.app.App
 import de.malteans.pixlists.di.initKoin
 
 fun MainViewController() = ComposeUIViewController(

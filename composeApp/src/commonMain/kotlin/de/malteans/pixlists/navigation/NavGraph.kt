@@ -16,11 +16,11 @@ import de.malteans.legal.presentation.navigation.LegalRoute
 import de.malteans.legal.presentation.screens.ImprintScreen
 import de.malteans.legal.presentation.screens.LicensesScreen
 import de.malteans.legal.presentation.screens.PrivacyScreen
-import de.malteans.pixlists.presentation.list.ListScreenRoot
-import de.malteans.pixlists.presentation.list.LoadingScreen
-import de.malteans.pixlists.presentation.main.components.CurScreen
-import de.malteans.pixlists.presentation.manageColors.ManageColorsScreenRoot
-import de.malteans.pixlists.presentation.settings.SettingsScreenRoot
+import de.malteans.pixlists.colors.presentation.ManageColorsScreenRoot
+import de.malteans.pixlists.core.presentation.main.components.CurScreen
+import de.malteans.pixlists.lists.presentation.ListScreenRoot
+import de.malteans.pixlists.lists.presentation.LoadingScreen
+import de.malteans.pixlists.settings.presentation.SettingsScreenRoot
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.Res
 import pixlists.composeapp.generated.resources.privacy_policy_path
