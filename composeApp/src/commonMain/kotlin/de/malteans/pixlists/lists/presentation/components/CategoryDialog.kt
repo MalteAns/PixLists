@@ -88,53 +88,49 @@ fun CategoryDialog(
             val exitAnimation = scaleOut(
                 animationSpec = tween(durationMillis = animationDuration),
             )
-            val showDelete by remember {
-                derivedStateOf {
-                    nameField.text.trim() == (categoryToEdit?.name ?: "") && color == categoryToEdit?.color
+            val showDelete by remember { derivedStateOf {
+                nameField.text.trim() == (categoryToEdit?.name ?: "") && color == categoryToEdit?.color
+            } }
+
+            val validToSubmit by remember { derivedStateOf {
+                nameField.text.isNotBlank() && color != null &&
+                    (!invalidNames.contains(nameField.text.trim())
+                        xor
+                    (nameField.text.trim() == (categoryToEdit?.name ?: "")))
+            } }
+
+            var deleteClicked by remember { mutableStateOf(false) }
+            LaunchedEffect(deleteClicked) {
+                if (deleteClicked) {
+                    delay(2000)
+                    deleteClicked = false
                 }
             }
-            AnimatedVisibility(
-                visible = !showDelete,
-                enter = enterAnimation,
-                exit = exitAnimation,
+            IconButton(
+                onClick = {
+                    if (showDelete) {
+                        if (deleteClicked) onDelete()
+                        deleteClicked = !deleteClicked
+                    } else onSubmit(
+                        if (nameField.text.trim() == (categoryToEdit?.name ?: "")) null else nameField.text,
+                        if (color == categoryToEdit?.color) null else color,
+                        isEdit
+                    )
+                },
+                enabled = showDelete || validToSubmit,
             ) {
-                val enabled = nameField.text.isNotBlank() && color != null &&
-                        (!invalidNames.contains(nameField.text.trim()) xor (nameField.text.trim() == (categoryToEdit?.name ?: "")))
-                IconButton(
-                    onClick = {
-                        onSubmit(
-                            if (nameField.text.trim() == (categoryToEdit?.name ?: "")) null else nameField.text,
-                            if (color == categoryToEdit?.color) null else color,
-                            isEdit
-                        )
-                    },
-                    enabled = enabled,
+                AnimatedVisibility(
+                    visible = !showDelete, enter = enterAnimation, exit = exitAnimation,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Submit",
-                        tint = if (enabled) MaterialTheme.colorScheme.primary
+                        tint = if (validToSubmit) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                     )
                 }
-            }
-            AnimatedVisibility(
-                visible = showDelete,
-                enter = enterAnimation,
-                exit = exitAnimation,
-            ) {
-                var deleteClicked by remember { mutableStateOf(false) }
-                LaunchedEffect(deleteClicked) {
-                    if (deleteClicked) {
-                        delay(2000)
-                        deleteClicked = false
-                    }
-                }
-                IconButton(
-                    onClick = {
-                        if (deleteClicked) onDelete()
-                        deleteClicked = !deleteClicked
-                    }
+                AnimatedVisibility(
+                    visible = showDelete, enter = enterAnimation, exit = exitAnimation,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,

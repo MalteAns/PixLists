@@ -1,5 +1,9 @@
 package de.malteans.pixlists.colors.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,7 +40,7 @@ import pixlists.composeapp.generated.resources.*
 @Composable
 fun ColorDialog(
     onDismiss: () -> Unit,
-    onFinish: (newName: String?, newRgb: List<Float>?, Boolean) -> Unit,
+    onSubmit: (newName: String?, newRgb: List<Float>?, Boolean) -> Unit,
     onDelete: () -> Unit,
     invalidNames: List<String> = emptyList(),
     isEdit: Boolean = false,
@@ -67,19 +71,8 @@ fun ColorDialog(
             )
         )
     }
-    val selectedRgbValues by remember { mutableStateOf(colorToEdit?.getRgbValues() ?: listOf(0f, 0f, 0f)) }
+    val selectedRgbValues by remember { mutableStateOf(colorToEdit?.getRgbValues() ?: List(3) { 0f }) }
     val mode by remember { mutableStateOf(Mode.HEX) }
-
-    var validToSave by remember { mutableStateOf(false) }
-
-    LaunchedEffect(nameField.text, selectedHexField.text, selectedRgbValues, mode) {
-        validToSave = nameField.text.isNotBlank() &&
-            (!invalidNames.contains(nameField.text.trim()) xor (nameField.text.trim() == (colorToEdit?.name ?: "")) &&
-            (mode == Mode.HEX && isValidHexColor(selectedHexField.text) &&
-                (!isEdit || selectedHexField.text != (colorToEdit?.toHex() ?: "") || nameField.text.trim() != (colorToEdit?.name ?: "")) ||
-            mode == Mode.RGB &&
-                (!isEdit || selectedRgbValues != (colorToEdit?.getRgbValues() ?: listOf<Float>()) || nameField.text.trim() != (colorToEdit?.name ?: ""))))
-    }
 
     CustomDialog(
         onDismissRequest = onDismiss,
@@ -102,22 +95,57 @@ fun ColorDialog(
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
             }
-            if (isEdit) {
-                IconButton(
-                    onClick = { onDelete() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-            }
         },
         rightIcons = {
+            val animationDuration = 150
+            val enterAnimation = scaleIn(
+                animationSpec = tween(durationMillis = animationDuration, delayMillis = animationDuration),
+            )
+            val exitAnimation = scaleOut(
+                animationSpec = tween(durationMillis = animationDuration),
+            )
+
+            val unsavedChanges by remember { derivedStateOf {
+                nameField.text.trim() != (colorToEdit?.name ?: "")
+                    ||
+                when (mode) {
+                    Mode.HEX -> selectedHexField.text != (colorToEdit?.toHex() ?: "")
+                    Mode.RGB -> selectedRgbValues != (colorToEdit?.getRgbValues() ?: List(3) { 0f } )
+                }
+            } }
+
+            val validToSave by remember { derivedStateOf {
+                unsavedChanges
+                    &&
+                nameField.text.isNotBlank() &&
+                        (!invalidNames.contains(nameField.text.trim()) xor (nameField.text.trim() == (colorToEdit?.name ?: "")))
+                    &&
+                when (mode) {
+                    Mode.HEX -> isValidHexColor(selectedHexField.text)
+                    Mode.RGB -> selectedRgbValues.all { it in 0f..1f }
+                }
+            } }
+
+            val showDelete by remember { derivedStateOf {
+                isEdit && colorToEdit != null
+                    &&
+                !unsavedChanges
+            } }
+
+            var deleteClicked by remember { mutableStateOf(false) }
+            LaunchedEffect(deleteClicked) {
+                if (deleteClicked) {
+                    delay(2000)
+                    deleteClicked = false
+                }
+            }
+
             IconButton(
                 onClick = {
-                    onFinish(
+                    if (showDelete) {
+                        if (deleteClicked) onDelete()
+                        deleteClicked = !deleteClicked
+                    } else onSubmit(
                         if (nameField.text.trim() == (colorToEdit?.name ?: "")) null else nameField.text,
                         if (mode == Mode.HEX) {
                             if (selectedHexField.text == (colorToEdit?.toHex() ?: "")) null else hexToRgb(selectedHexField.text)
@@ -126,14 +154,31 @@ fun ColorDialog(
                         } else null,
                         isEdit,
                     )
-                }
+                },
+                enabled = showDelete || validToSave,
             ) {
-                Icon(
-                    imageVector = Icons.Default.Done,
-                    contentDescription = "Done",
-                    tint = if (validToSave) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                )
+                AnimatedVisibility(
+                    visible = !showDelete, enter = enterAnimation, exit = exitAnimation,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Done,
+                        contentDescription = "Done",
+                        tint = if (validToSave) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                    )
+                }
+                AnimatedVisibility(
+                    visible = showDelete,
+                    enter = enterAnimation,
+                    exit = exitAnimation,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = if (deleteClicked) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             }
         },
     ) {

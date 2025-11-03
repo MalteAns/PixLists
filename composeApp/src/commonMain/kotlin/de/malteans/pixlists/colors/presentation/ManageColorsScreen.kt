@@ -60,7 +60,7 @@ fun ManageColorsScreen(
                 showColorDialog = false
                 colorToEdit = null
             },
-            onFinish = { newName, newRgb, isEdit ->
+            onSubmit = { newName, newRgb, isEdit ->
                 if (isEdit) {
                     onAction(
                         ManageColorsAction.UpdateColor(
