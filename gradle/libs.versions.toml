@@ -7,7 +7,7 @@ android-targetSdk = "36"
 applicationId = "de.malteans.pixlists"
 projectVersionCode = "2"
 projectVersionName = "1.0.0"
-projectVersionNameSuffix = "-beta2-pre"
+projectVersionNameSuffix = "-beta2"
 
 androidx-activityCompose = "1.11.0"
 androidx-lifecycle = "2.9.5"
