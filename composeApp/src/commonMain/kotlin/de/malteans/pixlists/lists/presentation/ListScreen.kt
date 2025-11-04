@@ -4,11 +4,11 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseOutBack
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
@@ -77,6 +77,21 @@ fun ListScreen(
 //    BackHandler {
 //        viewModel.undoLastAction()
 //    }
+
+    val pagerState = rememberPagerState(
+        initialPage = state.selectedYearIndex,
+        pageCount = { state.possibleYears.size }
+    )
+
+    LaunchedEffect(state.selectedYearIndex) {
+        pagerState.animateScrollToPage(state.selectedYearIndex)
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { yearIndex ->
+            onAction(ListAction.OnYearSelected(yearIndex))
+        }
+    }
 
     var showEntryDialog by remember { mutableStateOf(false) }
     var entryToEdit by remember { mutableStateOf<LocalDate?>(null) }
@@ -167,9 +182,34 @@ fun ListScreen(
                         visible = state.curPixList != null,
                         enter = scaleIn(tween(easing = EaseOutBack)),
                     ) {
-                        Text(
-                            text = state.curPixList?.name ?: "",
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(state.curPixList?.name ?: "")
+                            Row {
+                                val localContentColor = LocalContentColor.current
+                                state.possibleYears.forEachIndexed { index, year ->
+                                    Text(
+                                        text = year.toString(),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = localContentColor.copy(
+                                            alpha = if (index == state.selectedYearIndex) 1f
+                                                else 0.4f,
+                                        ),
+                                        modifier = Modifier
+                                            .clickable {
+                                                onAction(ListAction.OnYearSelected(index))
+                                            }
+                                    )
+                                    if (index < state.possibleYears.lastIndex) {
+                                        Text(
+                                            text = " | ",
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 actions = {
@@ -211,16 +251,32 @@ fun ListScreen(
             when {
                 (state.listStatus == ListStatus.LOADING || state.curPixList != null) -> {
                     Row {
-                        PixGrid(
-                            entries = state.curPixList?.entries ?: emptyMap(),
-                            enabled = state.curCategories.isNotEmpty(),
-                            onEntryEdit = { date, categories ->
-                                entryToEdit = date
-                                curEntryCategories = categories
-                                showEntryDialog = true
-                            },
-                            modifier = Modifier.weight(0.8f),
-                        )
+                        HorizontalPager(
+                            state = pagerState,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .weight(0.8f)
+                        ) { page ->
+                            state.possibleYears.getOrNull(page)?.let { year ->
+                                PixGrid(
+                                    entries = state.curPixList?.entries ?: emptyMap(),
+                                    enabled = state.curCategories.isNotEmpty(),
+                                    year = year,
+                                    onEntryEdit = { date, categories ->
+                                        entryToEdit = date
+                                        curEntryCategories = categories
+                                        showEntryDialog = true
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                )
+                            } ?: run {
+                                Box(Modifier.fillMaxSize()) {
+                                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                                }
+                            }
+                        }
+
                         // Categories -----------------------------------------------------------------
                         CategoryList(
                             curCategories = state.curCategories,

@@ -21,7 +21,10 @@ interface PixDao {
     suspend fun deleteListById(listId: Long)
 
     @Query("SELECT * FROM pixlistentity WHERE id = :listId")
-    fun getList(listId: Long): Flow<PixListEntity?>
+    fun getListFlow(listId: Long): Flow<PixListEntity?>
+
+    @Query("SELECT * FROM pixlistentity WHERE id = :listId")
+    suspend fun getList(listId: Long): PixListEntity?
 
     @Query("SELECT * FROM pixlistentity")
     fun getAllLists(): Flow<List<PixListEntity>>

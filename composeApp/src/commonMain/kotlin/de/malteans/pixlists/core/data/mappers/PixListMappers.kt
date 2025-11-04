@@ -6,16 +6,18 @@ import de.malteans.pixlists.core.data.serialization.JsonListDto
 import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixList
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
 
 fun PixListEntity.toPixList(
     categories: List<PixCategory> = emptyList(),
     entries: Map<LocalDate, List<PixCategory>> = emptyMap()
 ): PixList {
     return PixList(
-        id = id,
-        name = name,
+        id = this.id,
+        name = this.name,
         categories = categories,
         entries = entries,
+        years = Json.decodeFromString(this.years),
     )
 }
 
@@ -28,7 +30,8 @@ fun PixList.toJsonDto(): JsonListDto {
                 epochDays = date.toEpochDays(),
                 categoryNames = categories.map { it.name }
             )
-        }
+        },
+        years = this.years,
     )
 }
 

@@ -50,7 +50,7 @@ class DefaultPixRepository(
 
     override fun getCurrentPixList(listId: Long): Flow<PixList?> {
         return combine(
-            dao.getList(listId),
+            dao.getListFlow(listId),
             dao.getAllColors(),
             dao.getCategoriesForList(listId),
             dao.getEntriesForList(listId)
@@ -147,15 +147,18 @@ class DefaultPixRepository(
     }
 
     // Entry Operations --------------------------------------------------
-    override suspend fun createEntry(listId: Long, categoryId: Long, date: LocalDate): Long {
-        return dao.upsertEntry(PixEntryEntity(
-            listId = listId,
-            date = date,
-            categoryId = categoryId
-        ))
-    }
-
     override suspend fun setEntry(listId: Long, categoryIds: List<Long>, date: LocalDate): List<Long> {
+        val listEntity = dao.getList(listId)
+            ?: throw IllegalArgumentException("List with id $listId does not exist")
+        val list = listEntity.toPixList()
+        if (!list.years.contains(date.year)) {
+            dao.upsertList(
+                listEntity.copy(
+                    years = Json.encodeToString(list.years + date.year)
+                )
+            )
+        }
+
         val currentEntries
             = dao.getEntriesWithoutUpdate(listId, date).associateBy { it.categoryId }.toMutableMap()
         val entryIds = mutableListOf<Long>()

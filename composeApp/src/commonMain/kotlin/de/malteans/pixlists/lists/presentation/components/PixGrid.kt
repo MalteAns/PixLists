@@ -22,9 +22,10 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun PixGrid(
     entries: Map<LocalDate, List<PixCategory>>,
+    year: Int,
     enabled: Boolean,
     onEntryEdit: (LocalDate, List<PixCategory>) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
@@ -84,7 +85,7 @@ fun PixGrid(
                                             color = MaterialTheme.colorScheme.onSurface,
                                         )
                                     } else {
-                                        val date = LocalDate(2025, monthNumber, day)
+                                        val date = LocalDate(year, monthNumber, day)
                                         val pixCategories = entries.getOrElse(date) { emptyList() }
 
                                         PixCellCanvas(

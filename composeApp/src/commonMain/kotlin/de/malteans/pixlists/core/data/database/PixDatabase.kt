@@ -11,7 +11,7 @@ import de.malteans.pixlists.core.data.database.entities.PixListEntity
 
 @Database(
     entities = [PixListEntity::class, PixEntryEntity::class, PixCategoryEntity::class, PixColorEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(

@@ -23,7 +23,6 @@ fun CustomDatePickerDialog(
     initialSelectedDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
 ) {
     val datePickerState = rememberDatePickerState(
-        yearRange = 2025..2025,
         initialSelectedDateMillis = initialSelectedDate.toEpochDays() * 24L * 60L * 60L * 1000L,
     )
 

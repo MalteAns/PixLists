@@ -34,16 +34,20 @@ class ListViewModel(
         _curPixListId,
         _curPixList,
     ) { state, curPixListId, curPixList ->
-        ListState(
-            curPixList = curPixList,
+        state.copy(
+            colorList = state.colorList,
+            invalideNames = state.invalideNames.filter { it != curPixList?.name },
+
             listStatus = when {
                 curPixListId == null -> ListStatus.EMPTY
                 curPixList == null -> ListStatus.LOADING
                 else -> ListStatus.OPENED
             },
+
+            curPixList = curPixList,
             curCategories = curPixList?.categories ?: emptyList(),
-            colorList = state.colorList,
-            invalideNames = state.invalideNames.filter { it != curPixList?.name },
+
+            possibleYears = curPixList?.years ?: emptyList(),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -57,6 +61,10 @@ class ListViewModel(
 
             is ListAction.SetPixListId -> setPixListId(action.pixListId)
             is ListAction.UpdatePixListName -> updatePixListName(action.newName)
+
+            is ListAction.OnYearSelected -> _state.update { it.copy(
+                selectedYearIndex = action.yearIndex,
+            ) }
 
             is ListAction.CreatePixCategory -> createPixCategory(action.name, action.color)
             is ListAction.UpdatePixCategory -> updatePixCategory(action.category, action.newName, action.newColor)
