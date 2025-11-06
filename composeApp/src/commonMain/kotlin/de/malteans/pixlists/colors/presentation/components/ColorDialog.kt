@@ -4,10 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -23,16 +21,20 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.presentation.components.CustomDialog
 import de.malteans.pixlists.core.presentation.components.customIcons.FilledPixIcon
+import de.malteans.pixlists.core.presentation.components.customIcons.OutlinedPixIcon
+import de.malteans.pixlists.core.presentation.theme.containerColor
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.*
@@ -46,13 +48,16 @@ fun ColorDialog(
     isEdit: Boolean = false,
     colorToEdit: PixColor? = null,
 ) {
+    val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
-        delay(150)
-        focusRequester.requestFocus()
-        keyboardController?.show()
+        if (!isEdit) {
+            delay(150)
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
 
     var nameField by remember {
@@ -66,13 +71,12 @@ fun ColorDialog(
     var selectedHexField by remember {
         mutableStateOf(
             TextFieldValue(
-                text = colorToEdit?.toHex() ?: "#",
-                selection = TextRange((colorToEdit?.toHex() ?: "#").length)
+                text = colorToEdit?.toHex() ?: "",
+                selection = TextRange((colorToEdit?.toHex() ?: "").length)
             )
         )
     }
-    val selectedRgbValues by remember { mutableStateOf(colorToEdit?.getRgbValues() ?: List(3) { 0f }) }
-    val mode by remember { mutableStateOf(Mode.HEX) }
+    var selectedRgbValues by remember { mutableStateOf(colorToEdit?.getRgbValues()) }
 
     CustomDialog(
         onDismissRequest = onDismiss,
@@ -108,10 +112,7 @@ fun ColorDialog(
             val unsavedChanges by remember { derivedStateOf {
                 nameField.text.trim() != (colorToEdit?.name ?: "")
                     ||
-                when (mode) {
-                    Mode.HEX -> selectedHexField.text != (colorToEdit?.toHex() ?: "")
-                    Mode.RGB -> selectedRgbValues != (colorToEdit?.getRgbValues() ?: List(3) { 0f } )
-                }
+                selectedRgbValues != (colorToEdit?.getRgbValues())
             } }
 
             val validToSave by remember { derivedStateOf {
@@ -120,10 +121,7 @@ fun ColorDialog(
                 nameField.text.isNotBlank() &&
                         (!invalidNames.contains(nameField.text.trim()) xor (nameField.text.trim() == (colorToEdit?.name ?: "")))
                     &&
-                when (mode) {
-                    Mode.HEX -> isValidHexColor(selectedHexField.text)
-                    Mode.RGB -> selectedRgbValues.all { it in 0f..1f }
-                }
+                selectedRgbValues?.all { it in 0..255 } == true
             } }
 
             val showDelete by remember { derivedStateOf {
@@ -147,11 +145,7 @@ fun ColorDialog(
                         deleteClicked = !deleteClicked
                     } else onSubmit(
                         if (nameField.text.trim() == (colorToEdit?.name ?: "")) null else nameField.text,
-                        if (mode == Mode.HEX) {
-                            if (selectedHexField.text == (colorToEdit?.toHex() ?: "")) null else hexToRgb(selectedHexField.text)
-                        } else if (mode == Mode.RGB) {
-                            if (selectedRgbValues == (colorToEdit?.getRgbValues() ?: listOf<Float>())) null else selectedRgbValues
-                        } else null,
+                        selectedRgbValues?.toFloatColorValues(),
                         isEdit,
                     )
                 },
@@ -163,8 +157,8 @@ fun ColorDialog(
                     Icon(
                         imageVector = Icons.Default.Done,
                         contentDescription = "Done",
-                        tint = if (validToSave) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                        tint = selectedRgbValues.takeIf { validToSave }?.toColor()
+                            ?: MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                     )
                 }
                 AnimatedVisibility(
@@ -181,6 +175,12 @@ fun ColorDialog(
                 }
             }
         },
+        modifier = Modifier
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    focusManager.clearFocus()
+                }
+            }
     ) {
         val focusManager = LocalFocusManager.current
         if (invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (colorToEdit?.name ?: "")) {
@@ -211,7 +211,7 @@ fun ColorDialog(
                 onValueChange = { nameField = it },
                 singleLine = true,
                 label = { Text(stringResource(Res.string.name)) },
-                isError = invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (colorToEdit?.name ?: ""),
+                isError = nameField.text.isBlank() || invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (colorToEdit?.name ?: ""),
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next,
                 ),
@@ -219,79 +219,145 @@ fun ColorDialog(
                     focusManager.moveFocus(FocusDirection.Down)
                 },
                 modifier = Modifier
-                    .then(
-                        if (colorToEdit == null) Modifier.focusRequester(focusRequester)
-                        else Modifier
-                    )
+                    .focusRequester(focusRequester)
                     .fillMaxWidth()
             )
         }
-        // TODO: Add mode switcher
-        when (mode) {
-            Mode.HEX -> {                
-                OutlinedTextField(
-                    value = selectedHexField,
-                    onValueChange = { newValue ->
-                        if (newValue.text.length in 1..7
-                            && newValue.text.startsWith("#")
-                            && newValue.text.drop(1).all { it.isDigit() || it.lowercaseChar() in 'a'..'f' }
-                        ) {
-                            selectedHexField = newValue
-                        }
-                    },
-                    singleLine = true,
-                    label = { Text(stringResource(Res.string.color)) },
-                    isError = !isValidHexColor(selectedHexField.text),
-                    trailingIcon = {
-                        if (isValidHexColor(selectedHexField.text)) {
-                            val tempRbgValues = hexToRgb(selectedHexField.text)
-                            Icon(
-                                imageVector = FilledPixIcon,
-                                contentDescription = "Preview",
-                                tint = Color(red = tempRbgValues[0], green = tempRbgValues[1], blue = tempRbgValues[2]),
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .then(
-                            if (colorToEdit != null) Modifier.focusRequester(focusRequester)
-                            else Modifier
-                        )
-                        .fillMaxWidth()
+        OutlinedTextField(
+            value = selectedHexField,
+            onValueChange = { newValue ->
+                if (newValue.text.length <= 6 &&
+                        newValue.text.all { it.isDigit() || it.uppercaseChar() in 'A'..'F' })
+                    selectedHexField = newValue
+                if (newValue.text.isValidHexColor())
+                    selectedRgbValues = newValue.text.hexToRgb()
+            },
+            singleLine = true,
+            label = { Text(stringResource(Res.string.color)) },
+            isError = !selectedHexField.text.isValidHexColor(),
+            prefix = { Text("#") },
+            trailingIcon = {
+                if (selectedHexField.text.isValidHexColor()) {
+                    val tempRbgValues = selectedHexField.text.hexToRgb().toFloatColorValues()
+                    Icon(
+                        imageVector = FilledPixIcon,
+                        contentDescription = "Preview",
+                        tint = Color(red = tempRbgValues[0], green = tempRbgValues[1], blue = tempRbgValues[2]),
+                    )
+                } else {
+                    Icon(
+                        imageVector = OutlinedPixIcon,
+                        contentDescription = "Preview",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    )
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Characters,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+        Spacer(Modifier.height(4.dp))
+        Slider(
+            value = selectedRgbValues?.get(0)?.let { it / 255f } ?: 0f,
+            onValueChange = { newValue ->
+                focusManager.clearFocus()
+                selectedRgbValues = listOf(
+                    (newValue * 255).toInt(),
+                    selectedRgbValues?.get(1) ?: 0,
+                    selectedRgbValues?.get(2) ?: 0,
                 )
-            }
-            Mode.RGB -> {
-                // TODO: Add RGB input fields
-            }
-        }
+                selectedHexField = TextFieldValue(
+                    text = selectedRgbValues!!.joinToString("") { it.toHex() },
+                    selection = TextRange(6)
+                )
+            },
+            colors = SliderDefaults.colors(
+                thumbColor = Color.Red,
+                activeTrackColor = Color.Red,
+                inactiveTrackColor = MaterialTheme.colorScheme.containerColor,
+            ),
+        )
+        Slider(
+            value = selectedRgbValues?.get(1)?.let { it / 255f } ?: 0f,
+            onValueChange = { newValue ->
+                focusManager.clearFocus()
+                selectedRgbValues = listOf(
+                    selectedRgbValues?.get(0) ?: 0,
+                    (newValue * 255).toInt(),
+                    selectedRgbValues?.get(2) ?: 0,
+                )
+                selectedHexField = TextFieldValue(
+                    text = selectedRgbValues!!.joinToString("") { it.toHex() },
+                    selection = TextRange(6)
+                )
+            },
+            colors = SliderDefaults.colors(
+                thumbColor = Color.Green,
+                activeTrackColor = Color.Green,
+                inactiveTrackColor = MaterialTheme.colorScheme.containerColor,
+            ),
+        )
+        Slider(
+            value = selectedRgbValues?.get(2)?.let { it / 255f } ?: 0f,
+            onValueChange = { newValue ->
+                focusManager.clearFocus()
+                selectedRgbValues = listOf(
+                    selectedRgbValues?.get(0) ?: 0,
+                    selectedRgbValues?.get(1) ?: 0,
+                    (newValue * 255).toInt(),
+                )
+                selectedHexField = TextFieldValue(
+                    text = selectedRgbValues!!.joinToString("") { it.toHex() },
+                    selection = TextRange(6)
+                )
+            },
+            colors = SliderDefaults.colors(
+                thumbColor = Color.Blue,
+                activeTrackColor = Color.Blue,
+                inactiveTrackColor = MaterialTheme.colorScheme.containerColor,
+            ),
+        )
     }
 }
 
-fun isValidHexColor(hex: String): Boolean {
+private fun String.isValidHexColor(): Boolean {
     val regex = Regex("^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")
-    return regex.matches(hex)
+    return regex.matches(this)
 }
 
-fun hexToRgb(hexString: String): List<Float> {
-    var red = 0f
-    var green = 0f
-    var blue = 0f
-    when (hexString.length) {
-        7 -> {
-            red = hexString.substring(1, 3).toInt(16) / 255f
-            green = hexString.substring(3, 5).toInt(16) / 255f
-            blue = hexString.substring(5, 7).toInt(16) / 255f
+private fun Int.toHex() = this.toString(16).uppercase().padStart(2, '0')
+
+private fun String.hexToRgb(): List<Int> {
+    var red: Int
+    var green: Int
+    var blue: Int
+    when (this.length) {
+        6 -> {
+            red = this.substring(0, 2).toInt(16)
+            green = this.substring(2, 4).toInt(16)
+            blue = this.substring(4, 6).toInt(16)
         }
-        4 -> {
-            red = hexString.substring(1, 2).toInt(16) / 15f
-            green = hexString.substring(2, 3).toInt(16) / 15f
-            blue = hexString.substring(3, 4).toInt(16) / 15f
+        3 -> {
+            red = this[0].toString().toInt(16) * 17
+            green = this[1].toString().toInt(16) * 17
+            blue = this[2].toString().toInt(16) * 17
         }
+        else -> throw IllegalArgumentException("String must be a valid hex color code. (length with # must be 4 or 7)")
     }
     return listOf(red, green, blue)
 }
 
-enum class Mode {
-    HEX, RGB
+private fun List<Int>.toFloatColorValues(): List<Float> {
+    return this.map { it / 255f }
 }
 
+private fun List<Int>.toColor(): Color {
+    val floatValues = this.toFloatColorValues()
+    return Color(
+        red = floatValues[0],
+        green = floatValues[1],
+        blue = floatValues[2],
+    )
+}

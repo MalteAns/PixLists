@@ -14,10 +14,10 @@ data class PixColor(
     }
 
     fun toHex(): String {
-        return "#${red.toHex()}${green.toHex()}${blue.toHex()}"
+        return "${red.toHex()}${green.toHex()}${blue.toHex()}"
     }
 
-    fun getRgbValues(): List<Float> {
-        return listOf(red, green, blue)
+    fun getRgbValues(): List<Int> {
+        return listOf((255 * red).toInt(), (255 * green).toInt(), (255 * blue).toInt())
     }
 }

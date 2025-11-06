@@ -42,7 +42,7 @@ fun ColorItem(
                 style = MaterialTheme.typography.titleLarge
             )
             Text(
-                text = color.toHex(),
+                text = "#${color.toHex()}",
                 style = MaterialTheme.typography.bodySmall
             )
         }

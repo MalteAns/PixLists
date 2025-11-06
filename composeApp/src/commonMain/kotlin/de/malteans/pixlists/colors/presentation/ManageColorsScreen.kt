@@ -196,11 +196,11 @@ fun ManageColorsScreen(
                         color = color,
                         count = state.colorUses[color.id] ?: 0,
                         modifier = Modifier
-                            .padding(16.dp)
                             .clickable {
                                 colorToEdit = color
                                 showColorDialog = true
                             }
+                            .padding(16.dp)
                     )
                 }
             }
