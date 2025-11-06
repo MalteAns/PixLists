@@ -62,6 +62,13 @@ class ListViewModel(
             is ListAction.SetPixListId -> setPixListId(action.pixListId)
             is ListAction.UpdatePixListName -> updatePixListName(action.newName)
 
+            is ListAction.OnAddCurrentYear -> {
+                _curPixListId.value?.let { listId ->
+                    viewModelScope.launch(Dispatchers.IO) {
+                        repository.addYearToList(listId, action.year)
+                    }
+                }
+            }
             is ListAction.OnYearSelected -> _state.update { it.copy(
                 selectedYearIndex = action.yearIndex,
             ) }

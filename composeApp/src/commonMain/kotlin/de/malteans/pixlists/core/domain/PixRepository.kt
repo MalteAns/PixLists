@@ -15,6 +15,8 @@ interface PixRepository {
 
     fun getAllPixListsWithoutData(): Flow<List<PixList>>
 
+    suspend fun addYearToList(listId: Long, year: Int)
+
     fun getCurrentPixList(listId: Long): Flow<PixList?>
 
     // Category Operations ----------------------------------------------

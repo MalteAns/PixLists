@@ -8,7 +8,7 @@ import de.malteans.pixlists.core.domain.PixList
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 
-fun PixListEntity.toPixList(
+fun PixListEntity.toDomain(
     categories: List<PixCategory> = emptyList(),
     entries: Map<LocalDate, List<PixCategory>> = emptyMap()
 ): PixList {

@@ -33,6 +33,7 @@ import pixlists.composeapp.generated.resources.no_pixlist_selected
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun ListScreenRoot(
     viewModel: ListViewModel = koinViewModel(),
@@ -42,19 +43,7 @@ fun ListScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(curPixListId) {
-        when (curPixListId) {
-            null -> viewModel.onAction(ListAction.SetListStatus(ListStatus.EMPTY))
-            else -> {
-                viewModel.onAction(ListAction.SetListStatus(ListStatus.LOADING))
-                viewModel.onAction(ListAction.SetPixListId(curPixListId))
-            }
-        }
-    }
-
-    LaunchedEffect(state.curPixList) {
-        if (state.curPixList != null) {
-            viewModel.onAction(ListAction.SetListStatus(ListStatus.OPENED))
-        }
+        viewModel.onAction(ListAction.SetPixListId(curPixListId))
     }
 
     ListScreen(
@@ -91,6 +80,30 @@ fun ListScreen(
         snapshotFlow { pagerState.currentPage }.collect { yearIndex ->
             onAction(ListAction.OnYearSelected(yearIndex))
         }
+    }
+
+    LaunchedEffect(state.listStatus) {
+        if (state.listStatus == ListStatus.OPENED) {
+            val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
+            val yearIndex = state.possibleYears.indexOf(currentYear)
+            if (yearIndex != -1) {
+                onAction(ListAction.OnYearSelected(yearIndex))
+            } else {
+                onAction(ListAction.OnAddCurrentYear(currentYear))
+            }
+        }
+    }
+
+    var lastPossibleYears by remember { mutableStateOf(state.possibleYears) }
+    LaunchedEffect(state.possibleYears.size) {
+        if (lastPossibleYears.size == state.possibleYears.size - 1) {
+            onAction(ListAction.OnYearSelected(
+                yearIndex = state.possibleYears.indexOfFirst {
+                    it !in lastPossibleYears
+                }
+            ))
+        }
+        lastPossibleYears = state.possibleYears
     }
 
     var showEntryDialog by remember { mutableStateOf(false) }
@@ -248,78 +261,75 @@ fun ListScreen(
                 .padding(pad)
                 .padding(start = 8.dp, end = 4.dp, bottom = 16.dp)
         ) {
-            when {
-                (state.listStatus == ListStatus.LOADING || state.curPixList != null) -> {
-                    Row {
-                        HorizontalPager(
-                            state = pagerState,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .weight(0.8f)
-                        ) { page ->
-                            state.possibleYears.getOrNull(page)?.let { year ->
-                                PixGrid(
-                                    entries = state.curPixList?.entries ?: emptyMap(),
-                                    enabled = state.curCategories.isNotEmpty(),
-                                    year = year,
-                                    onEntryEdit = { date, categories ->
-                                        entryToEdit = date
-                                        curEntryCategories = categories
-                                        showEntryDialog = true
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                )
-                            } ?: run {
-                                Box(Modifier.fillMaxSize()) {
-                                    CircularProgressIndicator(Modifier.align(Alignment.Center))
-                                }
+            if (state.listStatus != ListStatus.EMPTY) {
+                Row {
+                    HorizontalPager(
+                        state = pagerState,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .weight(0.8f)
+                    ) { page ->
+                        state.possibleYears.getOrNull(page)?.let { year ->
+                            PixGrid(
+                                entries = state.curPixList?.entries ?: emptyMap(),
+                                enabled = state.curCategories.isNotEmpty(),
+                                year = year,
+                                onEntryEdit = { date, categories ->
+                                    entryToEdit = date
+                                    curEntryCategories = categories
+                                    showEntryDialog = true
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        } ?: run {
+                            Box(Modifier.fillMaxSize()) {
+                                CircularProgressIndicator(Modifier.align(Alignment.Center))
                             }
                         }
+                    }
 
-                        // Categories -----------------------------------------------------------------
-                        CategoryList(
-                            curCategories = state.curCategories,
-                            onEditCategory = { category ->
-                                categoryToEdit = category
-                                showCategoryDialog = true
-                            },
-                            onCreateCategory = {
-                                categoryToEdit = null
-                                showCategoryDialog = true
-                            },
-                            onUpdateOrder = {
-                                onAction(ListAction.UpdatePixCategoryOrder(it))
-                            },
-                            modifier = Modifier
-                                .weight(0.2f)
-                                .padding(bottom = 64.dp)
-                        )
-                    }
-                    AnimatedVisibility(
-                        visible = state.listStatus != ListStatus.OPENED,
-                        enter = EnterTransition.None,
-                        exit = fadeOut(),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .pointerInput(Unit) {
-                                    detectTapGestures(
-                                        onTap = { /* Consume tap to prevent clicks "through" this box */ }
-                                    )
-                                }
-                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
-                                .fillMaxSize()
-                        )
-                    }
+                    // Categories -----------------------------------------------------------------
+                    CategoryList(
+                        curCategories = state.curCategories,
+                        onEditCategory = { category ->
+                            categoryToEdit = category
+                            showCategoryDialog = true
+                        },
+                        onCreateCategory = {
+                            categoryToEdit = null
+                            showCategoryDialog = true
+                        },
+                        onUpdateOrder = {
+                            onAction(ListAction.UpdatePixCategoryOrder(it))
+                        },
+                        modifier = Modifier
+                            .weight(0.2f)
+                            .padding(bottom = 64.dp)
+                    )
                 }
-                else -> {
-                    Box(Modifier.fillMaxSize()) {
-                        Text(
-                            text = stringResource(resource = Res.string.no_pixlist_selected),
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
+                AnimatedVisibility(
+                    visible = state.listStatus != ListStatus.OPENED,
+                    enter = EnterTransition.None,
+                    exit = fadeOut(),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onTap = { /* Consume tap to prevent clicks "through" this box */ }
+                                )
+                            }
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                            .fillMaxSize()
+                    )
+                }
+            } else {
+                Box(Modifier.fillMaxSize()) {
+                    Text(
+                        text = stringResource(resource = Res.string.no_pixlist_selected),
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             }
         }

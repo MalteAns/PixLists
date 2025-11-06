@@ -8,7 +8,6 @@ import de.malteans.pixlists.core.data.database.entities.PixListEntity
 import de.malteans.pixlists.core.data.mappers.toDomain
 import de.malteans.pixlists.core.data.mappers.toEntity
 import de.malteans.pixlists.core.data.mappers.toJsonDto
-import de.malteans.pixlists.core.data.mappers.toPixList
 import de.malteans.pixlists.core.data.serialization.JsonFullDataDto
 import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
@@ -49,9 +48,22 @@ class DefaultPixRepository(
     override fun getAllPixListsWithoutData(): Flow<List<PixList>> {
         return dao.getAllLists().map { allLists ->
             allLists.map { listEntity ->
-                listEntity.toPixList()
+                listEntity.toDomain()
             }
         }
+    }
+
+    override suspend fun addYearToList(listId: Long, year: Int) {
+        val list = dao.getListWithoutUpdate(listId)?.toDomain()
+            ?: throw IllegalArgumentException("List with id $listId does not exist")
+        addYearToList(list, year)
+    }
+
+    suspend fun addYearToList(list: PixList, year: Int) {
+        dao.updateYearsForList(
+            list.id,
+            Json.encodeToString((list.years + year).sorted()),
+        )
     }
 
     override fun getCurrentPixList(listId: Long): Flow<PixList?> {
@@ -198,13 +210,9 @@ class DefaultPixRepository(
     override suspend fun setEntry(listId: Long, categoryIds: List<Long>, date: LocalDate): List<Long> {
         val listEntity = dao.getListWithoutUpdate(listId)
             ?: throw IllegalArgumentException("List with id $listId does not exist")
-        val list = listEntity.toPixList()
+        val list = listEntity.toDomain()
         if (!list.years.contains(date.year)) {
-            dao.upsertList(
-                listEntity.copy(
-                    years = Json.encodeToString(list.years + date.year)
-                )
-            )
+            addYearToList(list, date.year)
         }
 
         val currentEntries

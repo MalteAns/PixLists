@@ -34,6 +34,9 @@ interface PixDao {
     @Query("UPDATE pixlistentity SET name = :newName WHERE id = :listId")
     suspend fun renameList(listId: Long, newName: String)
 
+    @Query("UPDATE pixlistentity SET years = :years WHERE id = :listId")
+    suspend fun updateYearsForList(listId: Long, years: String)
+
     // PixEntry Operations -----------------------------------------------------
     @Upsert
     suspend fun upsertEntry(entry: PixEntryEntity): Long

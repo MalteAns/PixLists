@@ -12,6 +12,7 @@ sealed interface ListAction {
     data class SetPixListId(val pixListId: Long?) : ListAction
     data class UpdatePixListName(val newName: String) : ListAction
 
+    data class OnAddCurrentYear(val year: Int) : ListAction
     data class OnYearSelected(val yearIndex: Int) : ListAction
 
     data class CreatePixCategory(
