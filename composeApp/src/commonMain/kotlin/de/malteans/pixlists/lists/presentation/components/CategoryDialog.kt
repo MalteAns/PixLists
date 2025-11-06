@@ -19,7 +19,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.presentation.components.CustomDialog
@@ -141,9 +140,6 @@ fun CategoryDialog(
                 }
             }
         },
-        properties = DialogProperties(
-            dismissOnClickOutside = false,
-        )
     ) {
         val invalid = invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (categoryToEdit?.name ?: "")
         AnimatedVisibility(

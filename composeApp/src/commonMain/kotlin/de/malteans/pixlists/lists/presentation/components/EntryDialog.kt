@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -18,16 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.presentation.components.CustomDialog
-import de.malteans.pixlists.core.presentation.components.Dropdown
-import de.malteans.pixlists.core.presentation.components.customIcons.FilledPixIcon
-import de.malteans.pixlists.core.presentation.components.customIcons.OutlinedPixIcon
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.Res
-import pixlists.composeapp.generated.resources.category
 import pixlists.composeapp.generated.resources.set_entry
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -169,63 +163,6 @@ fun EntryDialog(
                     initialExpanded = index == selectedCategories.lastIndex
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun CategoryListItem(
-    selectedCategory: PixCategory?,
-    options: Map<PixCategory, String>,
-    changeCategory: (PixCategory) -> Unit,
-    removeCategory: () -> Unit,
-    index: Int,
-    initialExpanded: Boolean = false,
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        Dropdown(
-            options = options as Map<Any, String>,
-            label = "${stringResource(Res.string.category)} $index",
-            onValueChanged = { changeCategory(it as PixCategory) },
-            selectedOption = Pair(selectedCategory, selectedCategory?.name ?: ""),
-            optionIcon = { category ->
-                if (category != null) {
-                    category as PixCategory
-                    if (category.color != null) {
-                        Icon(
-                            imageVector = FilledPixIcon,
-                            contentDescription = "Filled Pix",
-                            tint = category.color.toColor(),
-                        )
-                    } else {
-                        Icon(
-                            imageVector = OutlinedPixIcon,
-                            contentDescription = "Outlined Pix",
-                            tint = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                }
-            },
-            initialExpanded = initialExpanded,
-            modifier = Modifier
-                .weight(1f)
-        )
-        IconButton(
-            onClick = removeCategory,
-            enabled = selectedCategory != null,
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = "Delete Category",
-                tint = if (selectedCategory == null) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                    else MaterialTheme.colorScheme.onSurface,
-            )
         }
     }
 }
