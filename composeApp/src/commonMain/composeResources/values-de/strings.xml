@@ -54,22 +54,38 @@
     <string name="add_colors">Farben hinzufügen</string>
     <string name="select_start_colors">Startfarben wählen</string>
 
-    <!-- Start color names -->
-    <string name="peach">Pfirsich</string>
-    <string name="lemon_yellow">Zitronengelb</string>
-    <string name="mint_green">Mintgrün</string>
-    <string name="baby_blue">Babyblau</string>
-    <string name="lavender">Lavendel</string>
-    <string name="blush_pink">Zartrosa</string>
-    <string name="pale_orange">Zartorange</string>
-    <string name="soft_chartreuse">Zartes Chartreuse</string>
-    <string name="pastel_emerald">Pastell-Smaragdgrün</string>
-    <string name="sea_mist">Meeresnebel</string>
-    <string name="powder_sky">Puderhimmelblau</string>
-    <string name="periwinkle">Immergrünblau</string>
-    <string name="soft_iris">Zarte Iris</string>
-    <string name="mauve_mist">Malvennebel</string>
-    <string name="orchid_bloom">Orchideenblüte</string>
-    <string name="soft_plum">Zarte Pflaume</string>
-    <string name="golden_cream">Goldcreme</string>
+    <!-- Start color names ________________________________________________ -->
+    <!-- Helle Pastelltöne -->
+    <string name="cotton_candy">Zuckerwatte</string>
+    <string name="lemon_sorbet">Zitronensorbet</string>
+    <string name="mint_mousse">Minz-Mousse</string>
+    <string name="seafoam_mist">Seegrün-Nebel</string>
+    <string name="sky_powder">Puderhimmelblau</string>
+    <string name="lilac_haze">Fliederhauch</string>
+    <string name="apricot_cream">Aprikosencreme</string>
+    <string name="buttercream">Buttercreme</string>
+    <string name="pistachio_whisper">Pistazienhauch</string>
+    <string name="aqua_glass">Aquaglas</string>
+    <string name="powder_denim">Puder-Jeansblau</string>
+    <string name="orchid_veil">Orchideenschleier</string>
+    <string name="rose_quartz">Rosenquarz</string>
+    <string name="peach_fuzz">Pfirsichflaum</string>
+    <string name="melon_sherbet">Melonen-Sorbet</string>
+
+    <!-- Dunklere (gedämpfte) Pastelltöne -->
+    <string name="dusty_peach">Staubiger Pfirsich</string>
+    <string name="muted_coral">Gedämpfte Koralle</string>
+    <string name="dusty_rose">Altrosa</string>
+    <string name="mauve_stone">Mauvenstein</string>
+    <string name="dusk_lavender">Abendlavendel</string>
+    <string name="storm_periwinkle">Sturm-Immergrünblau</string>
+    <string name="slate_powder">Schieferpuder</string>
+    <string name="muted_teal">Gedämpftes Petrol</string>
+    <string name="sage_moss">Salbeimoos</string>
+    <string name="muted_olive">Gedämpftes Oliv</string>
+    <string name="dusty_mustard">Staubiger Senf</string>
+    <string name="clay_apricot">Ton-Aprikose</string>
+    <string name="cocoa_cream">Kakaocreme</string>
+    <string name="foggy_taupe">Nebliges Taupe</string>
+    <string name="ink_wash">Tintenwaschgrau</string>
 </resources>

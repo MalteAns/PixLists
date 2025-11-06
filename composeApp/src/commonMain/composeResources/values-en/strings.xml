@@ -54,22 +54,38 @@
     <string name="add_colors">Add colors</string>
     <string name="select_start_colors">Select start colors</string>
 
-    <!-- Start color names -->
-    <string name="peach">Peach</string>
-    <string name="lemon_yellow">Lemon Yellow</string>
-    <string name="mint_green">Mint Green</string>
-    <string name="baby_blue">Baby Blue</string>
-    <string name="lavender">Lavender</string>
-    <string name="blush_pink">Blush Pink</string>
-    <string name="pale_orange">Pale Orange</string>
-    <string name="soft_chartreuse">Soft Chartreuse</string>
-    <string name="pastel_emerald">Pastel Emerald</string>
-    <string name="sea_mist">Sea Mist</string>
-    <string name="powder_sky">Powder Sky</string>
-    <string name="periwinkle">Periwinkle</string>
-    <string name="soft_iris">Soft Iris</string>
-    <string name="mauve_mist">Mauve Mist</string>
-    <string name="orchid_bloom">Orchid Bloom</string>
-    <string name="soft_plum">Soft Plum</string>
-    <string name="golden_cream">Golden Cream</string>
+    <!-- Start color names _________________________________________________ -->
+    <!-- Light pastels -->
+    <string name="cotton_candy">Cotton Candy</string>
+    <string name="lemon_sorbet">Lemon Sorbet</string>
+    <string name="mint_mousse">Mint Mousse</string>
+    <string name="seafoam_mist">Seafoam Mist</string>
+    <string name="sky_powder">Powder Sky</string>
+    <string name="lilac_haze">Lilac Haze</string>
+    <string name="apricot_cream">Apricot Cream</string>
+    <string name="buttercream">Buttercream</string>
+    <string name="pistachio_whisper">Pistachio Whisper</string>
+    <string name="aqua_glass">Aqua Glass</string>
+    <string name="powder_denim">Powder Denim</string>
+    <string name="orchid_veil">Orchid Veil</string>
+    <string name="rose_quartz">Rose Quartz</string>
+    <string name="peach_fuzz">Peach Fuzz</string>
+    <string name="melon_sherbet">Melon Sherbet</string>
+
+    <!-- Darker (muted) pastels -->
+    <string name="dusty_peach">Dusty Peach</string>
+    <string name="muted_coral">Muted Coral</string>
+    <string name="dusty_rose">Dusty Rose</string>
+    <string name="mauve_stone">Mauve Stone</string>
+    <string name="dusk_lavender">Dusk Lavender</string>
+    <string name="storm_periwinkle">Storm Periwinkle</string>
+    <string name="slate_powder">Slate Powder</string>
+    <string name="muted_teal">Muted Teal</string>
+    <string name="sage_moss">Sage Moss</string>
+    <string name="muted_olive">Muted Olive</string>
+    <string name="dusty_mustard">Dusty Mustard</string>
+    <string name="clay_apricot">Clay Apricot</string>
+    <string name="cocoa_cream">Cocoa Cream</string>
+    <string name="foggy_taupe">Foggy Taupe</string>
+    <string name="ink_wash">Ink Wash</string>
 </resources>

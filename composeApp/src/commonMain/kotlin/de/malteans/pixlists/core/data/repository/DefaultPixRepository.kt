@@ -10,6 +10,7 @@ import de.malteans.pixlists.core.data.mappers.toEntity
 import de.malteans.pixlists.core.data.mappers.toJsonDto
 import de.malteans.pixlists.core.data.mappers.toPixList
 import de.malteans.pixlists.core.data.serialization.JsonFullDataDto
+import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.domain.PixList
 import de.malteans.pixlists.core.domain.PixRepository
@@ -18,11 +19,16 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class DefaultPixRepository(
     private val dao: PixDao,
 ) : PixRepository {
@@ -49,23 +55,65 @@ class DefaultPixRepository(
     }
 
     override fun getCurrentPixList(listId: Long): Flow<PixList?> {
-        return combine(
-            dao.getListFlow(listId),
-            dao.getAllColors(),
-            dao.getCategoriesForList(listId),
-            dao.getEntriesForList(listId)
-        ) { listEntity, colors, categories, entries ->
-            val colorsMap = colors.associate { it.id to it.toDomain() }
-            val mappedCategories = categories.associate { categoryEntity ->
-                categoryEntity.id to categoryEntity.toDomain(colorsMap[categoryEntity.colorId])
+        return dao.getListDeepRows(listId).map { rows ->
+            if (rows.isEmpty()) return@map null
+
+            val base = rows.first()
+
+            val years: List<Int> = runCatching {
+                Json.decodeFromString<List<Int>>(base.listYearsJson)
+            }.getOrElse {
+                // Fallback to current year if parsing fails
+                Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year.let { listOf(it) }
             }
-            val mappedEntries = entries.groupBy(
-                keySelector = { it.date },
-                valueTransform = { mappedCategories[it.categoryId]
-                    ?: throw IllegalStateException("Category ${it.categoryId} not found for entry ${it.id} on ${it.date}")
+
+            // Build categories (unique by categoryId), include nullable color
+            val categoriesById = linkedMapOf<Long, PixCategory>()
+            rows.forEach { r ->
+                val cid = r.categoryId ?: return@forEach
+                if (!categoriesById.containsKey(cid)) {
+                    val color: PixColor? = if (r.colorId != null && r.colorRed != null && r.colorGreen != null && r.colorBlue != null) {
+                        PixColor(
+                            id = r.colorId,
+                            name = r.colorName.orEmpty(),
+                            red = r.colorRed,
+                            green = r.colorGreen,
+                            blue = r.colorBlue
+                        )
+                    } else null
+
+                    categoriesById[cid] = PixCategory(
+                        id = cid,
+                        listId = base.listId,
+                        color = color,
+                        name = r.categoryName.orEmpty(),
+                        orderIndex = r.categoryOrderIndex ?: Int.MAX_VALUE
+                    )
                 }
+            }
+
+            // Sorted categories (by orderIndex)
+            val sortedCategories = categoriesById.values.sortedBy { it.orderIndex }
+
+            // Entries: Map<LocalDate, List<PixCategory>>
+            val entriesMap: Map<LocalDate, List<PixCategory>> =
+                rows.asSequence()
+                    .filter { it.entryDate != null && it.categoryId != null }
+                    .groupBy { it.entryDate!! }
+                    .mapValues { (_, dayRows) ->
+                        dayRows
+                            .distinctBy { it.categoryId } // guard against accidental duplicates
+                            .sortedBy { it.categoryOrderIndex ?: Int.MAX_VALUE }
+                            .mapNotNull { r -> r.categoryId?.let(categoriesById::get) }
+                    }
+
+            PixList(
+                id = base.listId,
+                name = base.listName,
+                categories = sortedCategories,
+                entries = entriesMap,
+                years = years
             )
-            listEntity?.toPixList(mappedCategories.values.toList(), mappedEntries)
         }
     }
 
@@ -148,7 +196,7 @@ class DefaultPixRepository(
 
     // Entry Operations --------------------------------------------------
     override suspend fun setEntry(listId: Long, categoryIds: List<Long>, date: LocalDate): List<Long> {
-        val listEntity = dao.getList(listId)
+        val listEntity = dao.getListWithoutUpdate(listId)
             ?: throw IllegalArgumentException("List with id $listId does not exist")
         val list = listEntity.toPixList()
         if (!list.years.contains(date.year)) {

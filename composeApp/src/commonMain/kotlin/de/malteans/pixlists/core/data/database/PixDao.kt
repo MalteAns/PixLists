@@ -2,11 +2,13 @@ package de.malteans.pixlists.core.data.database
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import de.malteans.pixlists.core.data.database.entities.PixCategoryEntity
 import de.malteans.pixlists.core.data.database.entities.PixColorEntity
 import de.malteans.pixlists.core.data.database.entities.PixEntryEntity
 import de.malteans.pixlists.core.data.database.entities.PixListEntity
+import de.malteans.pixlists.core.data.database.joins.PixListDeepRow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 
@@ -21,10 +23,10 @@ interface PixDao {
     suspend fun deleteListById(listId: Long)
 
     @Query("SELECT * FROM pixlistentity WHERE id = :listId")
-    fun getListFlow(listId: Long): Flow<PixListEntity?>
+    fun getList(listId: Long): Flow<PixListEntity?>
 
     @Query("SELECT * FROM pixlistentity WHERE id = :listId")
-    suspend fun getList(listId: Long): PixListEntity?
+    suspend fun getListWithoutUpdate(listId: Long): PixListEntity?
 
     @Query("SELECT * FROM pixlistentity")
     fun getAllLists(): Flow<List<PixListEntity>>
@@ -110,4 +112,38 @@ interface PixDao {
     @Query("UPDATE pixcolorentity " +
             "SET red = :newRed, green = :newGreen, blue = :newBlue WHERE id = :colorId")
     suspend fun changeColor(colorId: Long, newRed: Float, newGreen: Float, newBlue: Float)
+
+    // Transactional Operations -------------------------------------------------
+    @Transaction
+    @Query("""
+        SELECT
+            l.id                        AS listId,
+            l.name                      AS listName,
+            l.years                     AS listYearsJson,
+
+            c.id                        AS categoryId,
+            c.name                      AS categoryName,
+            c.orderIndex                AS categoryOrderIndex,
+
+            col.id                      AS colorId,
+            col.name                    AS colorName,
+            col.red                     AS colorRed,
+            col.green                   AS colorGreen,
+            col.blue                    AS colorBlue,
+
+            e.id                        AS entryId,
+            e.date                      AS entryDate
+        FROM pixlistentity AS l
+        LEFT JOIN pixcategoryentity AS c
+               ON c.listId = l.id
+        LEFT JOIN pixcolorentity AS col
+               ON col.id = c.colorId
+        LEFT JOIN pixentryentity AS e
+               ON e.categoryId = c.id
+        WHERE l.id = :listId
+        ORDER BY
+            COALESCE(c.orderIndex, 2147483647),  -- categories first, nulls last
+            e.date
+    """)
+    fun getListDeepRows(listId: Long): Flow<List<PixListDeepRow>>
 }
