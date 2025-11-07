@@ -80,7 +80,7 @@ class ListViewModel(
 
             is ListAction.SetPixEntry -> setPixEntry(action.date, action.category)
 
-            else -> throw NotImplementedError("Action ${action::class.simpleName} is not implemented in ViewModel")
+            else -> throw NotImplementedError("Action $action is not implemented in ViewModel")
         }
     }
 

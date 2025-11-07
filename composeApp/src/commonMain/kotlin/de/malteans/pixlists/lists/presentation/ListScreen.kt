@@ -265,6 +265,7 @@ fun ListScreen(
                 Row {
                     HorizontalPager(
                         state = pagerState,
+                        userScrollEnabled = false,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .weight(0.8f)
