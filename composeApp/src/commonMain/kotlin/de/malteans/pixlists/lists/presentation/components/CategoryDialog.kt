@@ -195,7 +195,7 @@ fun CategoryDialog(
                 Dropdown(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    options = colors.associateBy({ it }, { it.name }),
+                    options = colors.sortedBy { it.name }.associateBy({ it }, { it.name }),
                     label = stringResource(Res.string.color),
                     onValueChanged = { color = it as PixColor },
                     selectedOption = Pair(color, color?.name
