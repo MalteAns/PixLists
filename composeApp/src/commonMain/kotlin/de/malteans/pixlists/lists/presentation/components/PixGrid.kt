@@ -1,9 +1,6 @@
 package de.malteans.pixlists.lists.presentation.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +21,7 @@ fun PixGrid(
     entries: Map<LocalDate, List<PixCategory>>,
     year: Int,
     enabled: Boolean,
-    onEntryEdit: (LocalDate, List<PixCategory>) -> Unit,
+    onEntryEdit: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -92,19 +89,15 @@ fun PixGrid(
                                             categories = pixCategories,
                                             isToday = date == today,
                                             enabled = enabled,
-                                            onClick = { onEntryEdit(date, pixCategories) },
+                                            onClick = { onEntryEdit(date) },
                                         )
 
                                         return@Row
                                     }
                                 }
                             }
-                            for (r in 0 until 31 - month.getDaysCount) {
-                                Row (
-                                    modifier = Modifier
-                                        .weight(1f / 32f),
-                                ) {
-                                }
+                            repeat (31 - month.getDaysCount) {
+                                Spacer(Modifier.weight(1f / 32f))
                             }
                         }
                     }

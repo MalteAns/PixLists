@@ -15,7 +15,7 @@ fun LoadingScreen(openDrawer: () -> Unit) {
     Scaffold (
         topBar = {
             CustomTopBar(
-                title = {  },
+                title = {},
                 openDrawer = openDrawer
             )
         }

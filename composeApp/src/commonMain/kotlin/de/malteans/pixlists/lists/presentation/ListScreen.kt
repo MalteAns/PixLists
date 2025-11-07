@@ -108,31 +108,27 @@ fun ListScreen(
 
     var showEntryDialog by remember { mutableStateOf(false) }
     var entryToEdit by remember { mutableStateOf<LocalDate?>(null) }
-    var curEntryCategories by remember { mutableStateOf<List<PixCategory>>(emptyList()) }
 
     if (showEntryDialog) {
         val startDate: LocalDate? = entryToEdit
-        val curCategories: List<PixCategory> = curEntryCategories
 
         val onDismiss = {
             showEntryDialog = false
             entryToEdit = null
-            curEntryCategories = emptyList()
         }
 
         EntryDialog(
             categories = state.curCategories,
+            entries = state.curPixList?.entries ?: emptyMap(),
             onDismiss = onDismiss,
-            onSubmit = { date, categories ->
-                onAction(ListAction.SetPixEntry(date, categories))
+            onSubmit = { changes ->
+                changes.forEach { change ->
+                    onAction(ListAction.SetPixEntry(change.key, change.value))
+                }
                 onDismiss()
             },
             startDate = startDate
                 ?: Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
-            onDateChanged = { newDate ->
-                state.curPixList?.entries[newDate] ?: emptyList()
-            },
-            curCategories = curCategories
         )
     }
 
@@ -275,9 +271,8 @@ fun ListScreen(
                                 entries = state.curPixList?.entries ?: emptyMap(),
                                 enabled = state.curCategories.isNotEmpty(),
                                 year = year,
-                                onEntryEdit = { date, categories ->
+                                onEntryEdit = { date ->
                                     entryToEdit = date
-                                    curEntryCategories = categories
                                     showEntryDialog = true
                                 },
                                 modifier = Modifier

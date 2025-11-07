@@ -54,6 +54,11 @@
     <string name="add_colors">Add colors</string>
     <string name="select_start_colors">Select start colors</string>
 
+    <string name="submit_changes_title">Save all?</string>
+    <string name="submit_changes_desc">You have made changes to multiple dates. Do you want to save all changes or only the changes for %1$s (currently selected date)?</string>
+    <string name="selected_date">Selected date</string>
+    <string name="all">All</string>
+
     <!-- Start color names _________________________________________________ -->
     <!-- Light pastels -->
     <string name="cotton_candy">Cotton Candy</string>
