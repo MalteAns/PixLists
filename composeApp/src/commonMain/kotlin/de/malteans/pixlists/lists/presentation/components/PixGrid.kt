@@ -25,6 +25,7 @@ fun PixGrid(
     modifier: Modifier = Modifier,
 ) {
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val leapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 
     Column (
         modifier = modifier
@@ -49,16 +50,9 @@ fun PixGrid(
                                     horizontalArrangement = Arrangement.End,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    val text = if (j == 0) {
-                                        null
-                                    } else if (j < 10) {
-                                        "0$j"
-                                    } else {
-                                        "$j"
-                                    }
-                                    if (text != null) {
+                                    if (j != 0) {
                                         Text (
-                                            text = text,
+                                            text = "$j".padStart(2, '0'),
                                             style = MaterialTheme.typography.labelMedium,
                                             color = MaterialTheme.colorScheme.onSurface,
                                             textAlign = TextAlign.Center,
@@ -69,11 +63,11 @@ fun PixGrid(
                         }
                         else -> {
                             val month = Months.getByIndex(monthNumber)
-                            for (day in 0..month.getDaysCount) {
+                            for (day in 0..month.getDaysCount(leapYear)) {
                                 Row (
-                                    modifier = Modifier
-                                        .weight(1f / 32f),
                                     verticalAlignment = Alignment.Bottom,
+                                    modifier = Modifier
+                                        .weight(1f / 32f)
                                 ) {
                                     if (day == 0) {
                                         Text(
@@ -91,12 +85,10 @@ fun PixGrid(
                                             enabled = enabled,
                                             onClick = { onEntryEdit(date) },
                                         )
-
-                                        return@Row
                                     }
                                 }
                             }
-                            repeat (31 - month.getDaysCount) {
+                            repeat (31 - month.getDaysCount(leapYear)) {
                                 Spacer(Modifier.weight(1f / 32f))
                             }
                         }

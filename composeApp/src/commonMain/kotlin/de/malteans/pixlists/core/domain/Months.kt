@@ -30,7 +30,9 @@ enum class Months {
             DECEMBER -> "D"
         }
 
-    val getDaysCount : Int
+    fun getDaysCount(leapYear: Boolean) = if (leapYear) getLeapYearDaysCount else getDaysCount
+
+    private val getDaysCount : Int
         get() = when (this) {
             JANUARY -> 31
             FEBRUARY -> 28
@@ -44,6 +46,12 @@ enum class Months {
             OCTOBER -> 31
             NOVEMBER -> 30
             DECEMBER -> 31
+        }
+
+    private val getLeapYearDaysCount : Int
+        get() = when (this) {
+            FEBRUARY -> 29
+            else -> getDaysCount
         }
 
     companion object {
