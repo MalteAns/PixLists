@@ -216,6 +216,10 @@ fun MainScreen(
                                     },
                                     selected = curPixList.id == state.curPixListId,
                                     onClick = {
+                                        if (curPixList.id == state.curPixListId) {
+                                            scope.launch(Dispatchers.IO) { drawerState.close() }
+                                            return@CustomDrawerItem
+                                        }
                                         viewModel.setCurScreen(CurScreen.LIST)
                                         viewModel.setCurPixListId(curPixList.id)
                                         scope.launch(Dispatchers.Main) {
@@ -227,7 +231,7 @@ fun MainScreen(
                                                 }
                                             }
                                         }
-                                    }
+                                    },
                                 )
                             }
                         }
