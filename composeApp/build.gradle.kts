@@ -112,7 +112,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = libs.versions.projectVersionCode.get().toInt()
         versionName = libs.versions.projectVersionName.get()
-        versionNameSuffix = libs.versions.projectVersionNameSuffix.get()
+//        versionNameSuffix = libs.versions.projectVersionNameSuffix.get()
     }
     packaging {
         resources {
