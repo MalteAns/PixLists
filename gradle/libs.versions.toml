@@ -4,10 +4,11 @@ agp = "8.12.3"
 android-compileSdk = "36"
 android-minSdk = "30"
 android-targetSdk = "36"
+
 applicationId = "de.malteans.pixlists"
-projectVersionCode = "4"
+projectVersionCode = "5"
 projectVersionName = "1.0.0"
-projectVersionNameSuffix = "-beta4"
+projectVersionNameSuffix = ""
 
 androidx-activityCompose = "1.11.0"
 androidx-lifecycle = "2.9.6"
