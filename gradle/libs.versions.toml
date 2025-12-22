@@ -30,7 +30,7 @@ kotlinxDatetime = "0.7.1-0.6.x-compat"
 reorderable = "3.0.0"
 
 kotlinStdlib = "2.3.0"
-aboutLibraries = "13.1.0"
+aboutLibraries = "13.2.1"
 
 datastore = "1.1.7"
 
