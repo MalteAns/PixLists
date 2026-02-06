@@ -25,14 +25,14 @@ fun NavListHeader(
     onLongClick: () -> Unit,
 ) {
     Row (
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .combinedClickable(
                 onClick = { },
                 onLongClick = onLongClick
-            ),
-        verticalAlignment = Alignment.CenterVertically
+            )
     ) {
         Column {
             Surface(

@@ -1,4 +1,4 @@
-package de.malteans.pixlists.lists.presentation.components
+package de.malteans.pixlists.lists.presentation.view.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOutBack
@@ -28,9 +28,9 @@ import de.malteans.pixlists.core.domain.PixCategory
 @Composable
 fun PixCellCanvas(
     categories: List<PixCategory>,
-    isToday: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
+    isToday: Boolean = false,
+    enabled: Boolean = false,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,
     cornerRadius: Dp = 3.dp,      // outer rounded corners

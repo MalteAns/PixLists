@@ -1,4 +1,4 @@
-package de.malteans.pixlists.lists.presentation
+package de.malteans.pixlists.lists.presentation.view
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,7 +6,7 @@ import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.domain.PixList
 import de.malteans.pixlists.core.domain.PixRepository
-import de.malteans.pixlists.lists.presentation.components.ListStatus
+import de.malteans.pixlists.lists.presentation.view.components.ListStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
-class ListViewModel(
+class ListViewViewModel(
     private val repository: PixRepository,
 ): ViewModel() {
 
@@ -27,7 +27,7 @@ class ListViewModel(
             else flowOf(null)
         }
 
-    private val _state = MutableStateFlow(ListState())
+    private val _state = MutableStateFlow(ListViewState())
 
     val state = combine(
         _state,
@@ -52,33 +52,33 @@ class ListViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = ListState()
+        initialValue = ListViewState()
     )
 
-    fun onAction(action: ListAction) {
+    fun onAction(action: ListViewAction) {
         when (action) {
-            is ListAction.SetListStatus -> _state.update { it.copy(listStatus = action.status) }
+            is ListViewAction.SetListStatus -> _state.update { it.copy(listStatus = action.status) }
 
-            is ListAction.SetPixListId -> setPixListId(action.pixListId)
-            is ListAction.UpdatePixListName -> updatePixListName(action.newName)
+            is ListViewAction.SetPixListId -> setPixListId(action.pixListId)
+            is ListViewAction.UpdatePixListName -> updatePixListName(action.newName)
 
-            is ListAction.OnAddCurrentYear -> {
+            is ListViewAction.OnAddCurrentYear -> {
                 _curPixListId.value?.let { listId ->
                     viewModelScope.launch(Dispatchers.IO) {
                         repository.addYearToList(listId, action.year)
                     }
                 }
             }
-            is ListAction.OnYearSelected -> _state.update { it.copy(
+            is ListViewAction.OnYearSelected -> _state.update { it.copy(
                 selectedYearIndex = action.yearIndex,
             ) }
 
-            is ListAction.CreatePixCategory -> createPixCategory(action.name, action.color)
-            is ListAction.UpdatePixCategory -> updatePixCategory(action.category, action.newName, action.newColor)
-            is ListAction.DeletePixCategory -> deletePixCategory(action.category)
-            is ListAction.UpdatePixCategoryOrder -> updateCategoryOrder(action.categories)
+            is ListViewAction.CreatePixCategory -> createPixCategory(action.name, action.color)
+            is ListViewAction.UpdatePixCategory -> updatePixCategory(action.category, action.newName, action.newColor)
+            is ListViewAction.DeletePixCategory -> deletePixCategory(action.category)
+            is ListViewAction.UpdatePixCategoryOrder -> updateCategoryOrder(action.categories)
 
-            is ListAction.SetPixEntry -> setPixEntry(action.date, action.category)
+            is ListViewAction.SetPixEntry -> setPixEntry(action.date, action.category)
 
             else -> throw NotImplementedError("Action $action is not implemented in ViewModel")
         }

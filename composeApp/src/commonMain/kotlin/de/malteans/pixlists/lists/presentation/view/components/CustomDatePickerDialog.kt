@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalTime::class)
 
-package de.malteans.pixlists.lists.presentation.components
+package de.malteans.pixlists.lists.presentation.view.components
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable

@@ -4,15 +4,17 @@ import kotlinx.serialization.Serializable
 
 sealed interface Route {
     @Serializable
-    data object ListNav : Route
-    @Serializable
-    sealed interface List : Route {
+    data object List : Route {
         @Serializable
-        data object Loading : List
+        data object Loading : Route
         @Serializable
         data class View(
             val curPixListId: Long? = null,
-        ) : List
+        ) : Route
+        @Serializable
+        data class Stats(
+            val listId: Long,
+        ) : Route
     }
 
     @Serializable

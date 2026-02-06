@@ -18,8 +18,9 @@ import de.malteans.legal.presentation.screens.LicensesScreen
 import de.malteans.legal.presentation.screens.PrivacyScreen
 import de.malteans.pixlists.colors.presentation.ManageColorsScreenRoot
 import de.malteans.pixlists.core.presentation.main.components.CurScreen
-import de.malteans.pixlists.lists.presentation.ListScreenRoot
-import de.malteans.pixlists.lists.presentation.LoadingScreen
+import de.malteans.pixlists.lists.presentation.stats.ListStatsScreenRoot
+import de.malteans.pixlists.lists.presentation.view.ListViewScreenRoot
+import de.malteans.pixlists.lists.presentation.view.LoadingListViewScreen
 import de.malteans.pixlists.settings.presentation.SettingsScreenRoot
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.Res
@@ -31,34 +32,42 @@ fun NavGraph(
     openDrawer: () -> Unit,
     setCurState: (CurScreen, Long?) -> Unit,
 ) {
-    val setCurScreen: (CurScreen) -> Unit = { screen ->
-        setCurState(screen, null)
-    }
-    val setCurList: (Long?) -> Unit = { pixListId ->
-        setCurState(CurScreen.LIST, pixListId)
+    fun setCurScreen(screen: CurScreen, listId: Long? = null) {
+        setCurState(screen, listId)
     }
 
     NavHost(
         navController = navController,
-        startDestination = Route.ListNav,
+        startDestination = Route.List,
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { ExitTransition.None },
     ) {
-        navigation<Route.ListNav>(
+        navigation<Route.List>(
             startDestination = Route.List.View(null)
         ) {
             composable<Route.List.Loading> {
                 setCurScreen(CurScreen.LIST)
-                LoadingScreen(openDrawer = openDrawer)
+                LoadingListViewScreen(openDrawer = openDrawer)
             }
             composable<Route.List.View> {
                 val args = it.toRoute<Route.List.View>()
-                setCurList(args.curPixListId)
-                ListScreenRoot(
-                    openDrawer = openDrawer,
+                setCurScreen(CurScreen.LIST, args.curPixListId)
+                ListViewScreenRoot(
                     curPixListId = args.curPixListId,
+                    openDrawer = openDrawer,
+                    openStats = { args.curPixListId?.let { listId ->
+                        navController.navigate(Route.List.Stats(listId))
+                    } }
+                )
+            }
+            composable<Route.List.Stats> {
+                val args = it.toRoute<Route.List.Stats>()
+                setCurScreen(CurScreen.LIST, args.listId)
+                ListStatsScreenRoot(
+                    listId = args.listId,
+                    navigateBack = navController::popBackStack,
                 )
             }
         }

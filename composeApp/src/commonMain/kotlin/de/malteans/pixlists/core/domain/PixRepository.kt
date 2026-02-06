@@ -17,6 +17,7 @@ interface PixRepository {
 
     suspend fun addYearToList(listId: Long, year: Int)
 
+    /** PixList with all it's info */
     fun getCurrentPixList(listId: Long): Flow<PixList?>
 
     // Category Operations ----------------------------------------------

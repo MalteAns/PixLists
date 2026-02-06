@@ -1,4 +1,4 @@
-package de.malteans.pixlists.lists.presentation
+package de.malteans.pixlists.lists.presentation.view
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseOutBack
@@ -12,6 +12,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.presentation.components.CustomTopBar
-import de.malteans.pixlists.lists.presentation.components.*
+import de.malteans.pixlists.lists.presentation.view.components.*
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -30,27 +32,31 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import pixlists.composeapp.generated.resources.Res
 import pixlists.composeapp.generated.resources.no_pixlist_selected
+import pixlists.composeapp.generated.resources.open_statistics
+import pixlists.composeapp.generated.resources.rename_list
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun ListScreenRoot(
-    viewModel: ListViewModel = koinViewModel(),
-    openDrawer: () -> Unit,
+fun ListViewScreenRoot(
     curPixListId: Long?,
+    openDrawer: () -> Unit,
+    openStats: () -> Unit,
+    viewModel: ListViewViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(curPixListId) {
-        viewModel.onAction(ListAction.SetPixListId(curPixListId))
+        viewModel.onAction(ListViewAction.SetPixListId(curPixListId))
     }
 
-    ListScreen(
+    ListViewScreen(
         state = state,
         onAction = { action ->
             when (action) {
-                is ListAction.OpenDrawer-> openDrawer()
+                is ListViewAction.OpenDrawer -> openDrawer()
+                is ListViewAction.OpenStats -> openStats()
                 else -> viewModel.onAction(action)
             }
         }
@@ -59,9 +65,9 @@ fun ListScreenRoot(
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun ListScreen(
-    state: ListState,
-    onAction: (ListAction) -> Unit,
+fun ListViewScreen(
+    state: ListViewState,
+    onAction: (ListViewAction) -> Unit,
 ) {
 //    BackHandler {
 //        viewModel.undoLastAction()
@@ -78,7 +84,7 @@ fun ListScreen(
 
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { yearIndex ->
-            onAction(ListAction.OnYearSelected(yearIndex))
+            onAction(ListViewAction.OnYearSelected(yearIndex))
         }
     }
 
@@ -87,9 +93,9 @@ fun ListScreen(
             val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
             val yearIndex = state.possibleYears.indexOf(currentYear)
             if (yearIndex != -1) {
-                onAction(ListAction.OnYearSelected(yearIndex))
+                onAction(ListViewAction.OnYearSelected(yearIndex))
             } else {
-                onAction(ListAction.OnAddCurrentYear(currentYear))
+                onAction(ListViewAction.OnAddCurrentYear(currentYear))
             }
         }
     }
@@ -97,7 +103,7 @@ fun ListScreen(
     var lastPossibleYears by remember { mutableStateOf(state.possibleYears) }
     LaunchedEffect(state.possibleYears.size) {
         if (lastPossibleYears.size == state.possibleYears.size - 1) {
-            onAction(ListAction.OnYearSelected(
+            onAction(ListViewAction.OnYearSelected(
                 yearIndex = state.possibleYears.indexOfFirst {
                     it !in lastPossibleYears
                 }
@@ -123,7 +129,7 @@ fun ListScreen(
             onDismiss = onDismiss,
             onSubmit = { changes ->
                 changes.forEach { change ->
-                    onAction(ListAction.SetPixEntry(change.key, change.value))
+                    onAction(ListViewAction.SetPixEntry(change.key, change.value))
                 }
                 onDismiss()
             },
@@ -143,22 +149,26 @@ fun ListScreen(
             },
             onSubmit = { name, color, isEdit ->
                 if (isEdit) {
-                    onAction(ListAction.UpdatePixCategory(
-                        categoryToEdit!!,
-                        name,
-                        color
-                    ))
+                    onAction(
+                        ListViewAction.UpdatePixCategory(
+                            categoryToEdit!!,
+                            name,
+                            color
+                        )
+                    )
                 } else {
-                    onAction(ListAction.CreatePixCategory(
-                        name!!,
-                        color!!
-                    ))
+                    onAction(
+                        ListViewAction.CreatePixCategory(
+                            name!!,
+                            color!!
+                        )
+                    )
                 }
                 showCategoryDialog = false
                 categoryToEdit = null
             },
             onDelete = {
-                onAction(ListAction.DeletePixCategory(categoryToEdit!!))
+                onAction(ListViewAction.DeletePixCategory(categoryToEdit!!))
                 showCategoryDialog = false
                 categoryToEdit = null
             },
@@ -177,7 +187,7 @@ fun ListScreen(
             invalideNames = state.invalideNames,
             onDismiss = { showRenameDialog = false },
             onFinish = { newName ->
-                onAction(ListAction.UpdatePixListName(newName))
+                onAction(ListViewAction.UpdatePixListName(newName))
                 showRenameDialog = false
             }
         )
@@ -206,9 +216,7 @@ fun ListScreen(
                                                 else 0.4f,
                                         ),
                                         modifier = Modifier
-                                            .clickable {
-                                                onAction(ListAction.OnYearSelected(index))
-                                            }
+                                            .clickable { onAction(ListViewAction.OnYearSelected(index)) }
                                     )
                                     if (index < state.possibleYears.lastIndex) {
                                         Text(
@@ -226,15 +234,49 @@ fun ListScreen(
                         visible = state.curPixList != null,
                         enter = scaleIn(tween(easing = EaseOutBack)),
                     ) {
-                        IconButton({ showRenameDialog = true }) {
+                        var showDropdown by remember { mutableStateOf(false) }
+
+                        IconButton(onClick = { showDropdown = !showDropdown }) {
                             Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Rename PixList",
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "More Actions",
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = showDropdown,
+                            onDismissRequest = { showDropdown = false }
+                        ) {
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = stringResource(Res.string.rename_list),
+                                    )
+                                },
+                                text = { Text(stringResource(Res.string.rename_list)) },
+                                onClick = {
+                                    showRenameDialog = true
+                                    showDropdown = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.QueryStats,
+                                        contentDescription = stringResource(Res.string.open_statistics),
+                                    )
+                                },
+                                text = { Text(stringResource(Res.string.open_statistics)) },
+                                onClick = {
+                                    onAction(ListViewAction.OpenStats)
+                                    showDropdown = false
+                                }
                             )
                         }
                     }
                 },
-                openDrawer = { onAction(ListAction.OpenDrawer) },
+                openDrawer = { onAction(ListViewAction.OpenDrawer) },
             )
         },
         floatingActionButton = {
@@ -297,7 +339,7 @@ fun ListScreen(
                             showCategoryDialog = true
                         },
                         onUpdateOrder = {
-                            onAction(ListAction.UpdatePixCategoryOrder(it))
+                            onAction(ListViewAction.UpdatePixCategoryOrder(it))
                         },
                         modifier = Modifier
                             .weight(0.2f)

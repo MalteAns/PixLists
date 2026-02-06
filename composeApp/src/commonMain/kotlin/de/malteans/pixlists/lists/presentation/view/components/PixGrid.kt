@@ -1,4 +1,4 @@
-package de.malteans.pixlists.lists.presentation.components
+package de.malteans.pixlists.lists.presentation.view.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme

@@ -1,11 +1,11 @@
-package de.malteans.pixlists.lists.presentation
+package de.malteans.pixlists.lists.presentation.view
 
 import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.domain.PixList
-import de.malteans.pixlists.lists.presentation.components.ListStatus
+import de.malteans.pixlists.lists.presentation.view.components.ListStatus
 
-data class ListState(
+data class ListViewState(
     val colorList: List<PixColor> = emptyList(),
     val invalideNames: List<String> = emptyList(),
 

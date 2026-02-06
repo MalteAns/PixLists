@@ -59,7 +59,14 @@
     <string name="selected_date">Selected date</string>
     <string name="all">All</string>
 
-    <!-- Start color names _________________________________________________ -->
+    <string name="rename_list">Rename list</string>
+
+    <!-- Stats Screen ______________________________________________________________________________________________ -->
+    <string name="list_statistics">List Statistics</string>
+    <string name="open_statistics">Open statistics</string>
+    <string name="filter_categories">Filter categories</string>
+
+    <!-- Start color names _________________________________________________________________________________________ -->
     <!-- Light pastels -->
     <string name="cotton_candy">Cotton Candy</string>
     <string name="lemon_sorbet">Lemon Sorbet</string>
@@ -76,8 +83,7 @@
     <string name="rose_quartz">Rose Quartz</string>
     <string name="peach_fuzz">Peach Fuzz</string>
     <string name="melon_sherbet">Melon Sherbet</string>
-
-    <!-- Darker (muted) pastels -->
+    <!-- Darker pastels -->
     <string name="dusty_peach">Dusty Peach</string>
     <string name="muted_coral">Muted Coral</string>
     <string name="dusty_rose">Dusty Rose</string>

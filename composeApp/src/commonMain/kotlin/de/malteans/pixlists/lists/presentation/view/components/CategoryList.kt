@@ -1,4 +1,4 @@
-package de.malteans.pixlists.lists.presentation.components
+package de.malteans.pixlists.lists.presentation.view.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseOutBack
@@ -87,6 +87,7 @@ fun CategoryList(
                         key = category.id,
                     ) { isDragging ->
                         Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(4.dp)
@@ -98,8 +99,7 @@ fun CategoryList(
                                     onDragStopped = {
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
                                     }
-                                ),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                )
                         ) {
                             Row {
                                 if (category.color != null) {

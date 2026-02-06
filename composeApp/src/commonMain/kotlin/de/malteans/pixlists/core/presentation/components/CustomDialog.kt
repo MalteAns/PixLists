@@ -3,9 +3,9 @@ package de.malteans.pixlists.core.presentation.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +18,14 @@ import androidx.compose.ui.window.DialogProperties
 fun CustomDialog(
     onDismissRequest: () -> Unit,
     title: @Composable RowScope.() -> Unit,
-    leftIcons: @Composable RowScope.() -> Unit = {},
+    leftIcons: @Composable RowScope.() -> Unit = {
+        IconButton(onClick = onDismissRequest) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close dialog",
+            )
+        }
+    },
     rightIcons: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,
     properties: DialogProperties = DialogProperties(),

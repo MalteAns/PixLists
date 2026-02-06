@@ -1,4 +1,4 @@
-package de.malteans.pixlists.lists.presentation
+package de.malteans.pixlists.lists.presentation.view
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import de.malteans.pixlists.core.presentation.components.CustomTopBar
 
 @Composable
-fun LoadingScreen(openDrawer: () -> Unit) {
+fun LoadingListViewScreen(openDrawer: () -> Unit) {
     Scaffold (
         topBar = {
             CustomTopBar(

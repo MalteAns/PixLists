@@ -59,7 +59,14 @@
     <string name="selected_date">Ausgewähltes Datum</string>
     <string name="all">Alle</string>
 
-    <!-- Start color names ________________________________________________ -->
+    <string name="rename_list">Liste umbenennen</string>
+
+    <!-- Stats Screen ______________________________________________________________________________________________ -->
+    <string name="list_statistics">Listen Statistiken</string>
+    <string name="open_statistics">Statistiken öffnen</string>
+    <string name="filter_categories">Kategorien filtern</string>
+
+    <!-- Start color names _________________________________________________________________________________________ -->
     <!-- Helle Pastelltöne -->
     <string name="cotton_candy">Zuckerwatte</string>
     <string name="lemon_sorbet">Zitronensorbet</string>

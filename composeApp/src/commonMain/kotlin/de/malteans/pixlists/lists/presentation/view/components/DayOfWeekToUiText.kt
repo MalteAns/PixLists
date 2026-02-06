@@ -1,4 +1,4 @@
-package de.malteans.pixlists.lists.presentation.components
+package de.malteans.pixlists.lists.presentation.view.components
 
 import de.malteans.pixlists.core.presentation.util.UiText
 import kotlinx.datetime.DayOfWeek
