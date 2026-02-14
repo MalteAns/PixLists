@@ -12,10 +12,10 @@ projectVersionNameSuffix = "-pre"
 
 androidx-activityCompose = "1.11.0"
 androidx-lifecycle = "2.9.6"
-compose-multiplatform = "1.10.0"
+compose-multiplatform = "1.10.1"
 filekit = "0.12.0"
 kotlin = "2.3.10"
-navigationCompose = "2.9.1"
+navigationCompose = "2.9.2"
 kotlinSerialization = "1.10.0"
 koin = "4.1.1"
 
