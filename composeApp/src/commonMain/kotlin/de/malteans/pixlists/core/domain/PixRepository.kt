@@ -1,5 +1,7 @@
 package de.malteans.pixlists.core.domain
 
+import de.malteans.pixlists.dashboard.domain.PixDashboardWidget
+import de.malteans.pixlists.dashboard.domain.WidgetType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.JsonElement
@@ -57,4 +59,13 @@ interface PixRepository {
     suspend fun exportAllData(): JsonElement
 
     suspend fun importAllData(data: JsonElement): Result<Unit>
+
+    // Widget Operations ----------------------------------------------------------------------------------------------
+    fun getAllWidgets(): Flow<List<PixDashboardWidget>>
+
+    suspend fun createWidget(listId: Long, type: WidgetType, categories: List<PixCategory>): Long
+
+    suspend fun updateWidget(widgetId: Long, categories: List<PixCategory>)
+
+    suspend fun deleteWidget(widgetId: Long)
 }

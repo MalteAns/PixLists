@@ -4,10 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
-import de.malteans.pixlists.core.data.database.entities.PixCategoryEntity
-import de.malteans.pixlists.core.data.database.entities.PixColorEntity
-import de.malteans.pixlists.core.data.database.entities.PixEntryEntity
-import de.malteans.pixlists.core.data.database.entities.PixListEntity
+import de.malteans.pixlists.core.data.database.entities.*
 import de.malteans.pixlists.core.data.database.joins.PixListDeepRow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
@@ -115,6 +112,54 @@ interface PixDao {
     @Query("UPDATE pixcolorentity " +
             "SET red = :newRed, green = :newGreen, blue = :newBlue WHERE id = :colorId")
     suspend fun changeColor(colorId: Long, newRed: Float, newGreen: Float, newBlue: Float)
+
+    // PixWidget Operations ----------------------------------------------------
+    @Query("SELECT * FROM pixdashboardwidgetentity")
+    fun getAllWidgets(): Flow<List<PixDashboardWidgetEntity>>
+
+    @Query("SELECT * FROM pixdashboardwidgetcategoryentity")
+    fun getAllWidgetCategories(): Flow<List<PixDashboardWidgetCategoryEntity>>
+
+    @Upsert
+    fun upsertWidget(widget: PixDashboardWidgetEntity): Long
+
+    @Upsert
+    fun upsertWidgetCategory(widgetCategory: PixDashboardWidgetCategoryEntity)
+
+    @Query("DELETE FROM pixdashboardwidgetcategoryentity WHERE widgetId = :widgetId")
+    fun deleteWidgetCategoriesByWidgetId(widgetId: Long)
+
+    @Transaction
+    fun updateWidgetCategories(widgetId: Long, categoryIds: List<Long>) {
+        // Delete existing categories for the widget
+        deleteWidgetCategoriesByWidgetId(widgetId)
+        // Insert new categories
+        categoryIds.forEach { categoryId ->
+            upsertWidgetCategory(
+                PixDashboardWidgetCategoryEntity(
+                    widgetId = widgetId,
+                    categoryId = categoryId
+                )
+            )
+        }
+    }
+
+    @Transaction
+    fun upsertWidgetTransaction(widget: PixDashboardWidgetEntity, categoryIds: List<Long>): Long {
+        val widgetId = upsertWidget(widget)
+        categoryIds.forEach { categoryId ->
+            upsertWidgetCategory(
+                PixDashboardWidgetCategoryEntity(
+                    widgetId = widgetId,
+                    categoryId = categoryId
+                )
+            )
+        }
+        return widgetId
+    }
+
+    @Query("DELETE FROM pixdashboardwidgetentity WHERE id = :widgetId")
+    fun deleteWidgetById(widgetId: Long)
 
     // Transactional Operations -------------------------------------------------
     @Transaction
