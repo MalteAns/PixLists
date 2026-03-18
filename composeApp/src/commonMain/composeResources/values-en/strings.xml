@@ -61,6 +61,29 @@
 
     <string name="rename_list">Rename list</string>
 
+    <!-- Dashboard Screen __________________________________________________________________________________________ -->
+    <string name="quick_entry">Quick Entry</string>
+    <string name="statistics">Statistics</string>
+    <string name="pie_chart">Pie chart</string>
+    <string name="column_chart">Column chart</string>
+    <string name="bar_chart">Bar chart</string>
+    <string name="line_chart">Line chart</string>
+    <string name="entry_added_succesfully">Entry added successfully</string>
+    <string name="show_list">Show list</string>
+    <string name="add_widget">Add Widget</string>
+    <string name="select_pixlist">Select PixList</string>
+    <string name="widget_type">Widget Type</string>
+    <string name="categories_select">Categories (select at least one)</string>
+    <string name="add_entry_today">Add entry for today</string>
+    <string name="no_categories_available">No categories available</string>
+    <string name="select_pixlist_first">Select a PixList first</string>
+    <string name="with_time">with time</string>
+    <string name="text">Text</string>
+    <string name="display_type">Display type</string>
+    <string name="quick_entry_heading">Quick entry for '%1$s'</string>
+    <string name="statistics_heading">Statistics for '%1$s'</string>
+    <string name="edit_widget">Edit widget</string>
+
     <!-- Stats Screen ______________________________________________________________________________________________ -->
     <string name="list_statistics">List Statistics</string>
     <string name="open_statistics">Open statistics</string>

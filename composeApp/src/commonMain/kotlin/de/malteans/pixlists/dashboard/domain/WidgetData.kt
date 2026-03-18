@@ -1,8 +1,11 @@
 package de.malteans.pixlists.dashboard.domain
 
-open class WidgetData(val type: WidgetType) {
-    data class QuickEntry(
-        val listId: Long,
-        val preSelectedCategories: List<Long>
-    ): WidgetData(WidgetType.QUICK_ENTRY)
-}
+import de.malteans.pixlists.core.domain.PixCategory
+import de.malteans.pixlists.core.domain.PixList
+
+data class WidgetData(
+    val id: Long,
+    val pixList: PixList,
+    val type: WidgetType,
+    val categories: List<PixCategory>,
+)

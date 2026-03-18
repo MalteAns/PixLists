@@ -19,6 +19,7 @@ val PixDatabase.Companion.MIGRATION3_4: Migration
                 )
                 """.trimIndent()
             )
+            connection.execSQL("CREATE INDEX IF NOT EXISTS `index_PixDashboardWidgetEntity_listId` ON `PixDashboardWidgetEntity` (`listId`)")
             // 2) Create new table for PixDashboardWidgetCategoryEntity
             connection.execSQL(
                 """
@@ -31,5 +32,7 @@ val PixDatabase.Companion.MIGRATION3_4: Migration
                 )
                 """.trimIndent()
             )
+            connection.execSQL("CREATE INDEX IF NOT EXISTS `index_PixDashboardWidgetCategoryEntity_widgetId` ON `PixDashboardWidgetCategoryEntity` (`widgetId`)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS `index_PixDashboardWidgetCategoryEntity_categoryId` ON `PixDashboardWidgetCategoryEntity` (`categoryId`)")
         }
     }

@@ -45,7 +45,7 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     val state by viewModel.state.collectAsState()
     val navController = rememberNavController()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Open)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     if (state.showStartColorDialog) {
         StartColorsDialog(
@@ -161,6 +161,10 @@ fun MainScreen(
                 ModalDrawerSheet {
                     Spacer(modifier = Modifier.height(8.dp))
                     NavListHeader(
+                        onClick = {
+                            navController.popBackStack<Route.Dashboard.View>(inclusive = false)
+                            scope.launch(Dispatchers.IO) { drawerState.close() }
+                        },
                         onLongClick = {
                             showHiddenLists = !showHiddenLists
                             scope.launch(Dispatchers.IO) {
@@ -203,7 +207,7 @@ fun MainScreen(
                                             onClick = {
                                                 listToDelete = curPixList
                                                 if (curPixList.id == state.curPixListId) {
-                                                    navController.navigate(Route.List.View(null))
+                                                    navController.popBackStack<Route.Dashboard.View>(inclusive = false)
                                                 }
                                                 showDeleteListDialog = true
                                             }

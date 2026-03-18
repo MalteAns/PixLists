@@ -10,7 +10,7 @@ import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.domain.PixList
 import de.malteans.pixlists.core.domain.PixRepository
-import de.malteans.pixlists.dashboard.domain.PixDashboardWidget
+import de.malteans.pixlists.dashboard.domain.WidgetData
 import de.malteans.pixlists.dashboard.domain.WidgetType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -40,6 +40,20 @@ class DefaultPixRepository(
 
     override suspend fun renameList(listId: Long, newName: String) {
         dao.renameList(listId, newName)
+    }
+
+    override fun getAllPixLists(): Flow<List<PixList>> {
+        return dao.getAllLists().flatMapLatest { allLists ->
+            if (allLists.isEmpty()) return@flatMapLatest flowOf(emptyList())
+
+            val listFlows = allLists.map { listEntity ->
+                getCurrentPixList(listEntity.id)
+            }
+
+            combine(listFlows) { lists ->
+                lists.filterNotNull()
+            }
+        }
     }
 
     override fun getAllPixListsWithoutData(): Flow<List<PixList>> {
@@ -322,10 +336,10 @@ class DefaultPixRepository(
     }
 
     // Widget Operations ----------------------------------------------------------------------------------------------
-    override fun getAllWidgets(): Flow<List<PixDashboardWidget>> {
+    override fun getAllWidgets(): Flow<List<WidgetData>> {
         return combine(
             dao.getAllWidgets(),
-            dao.getAllWidgetCategories()
+            dao.getAllWidgetCategories(),
         ) { widgets, widgetCategories ->
             widgets to widgetCategories
         }.flatMapLatest { (widgets, widgetCategories) ->
@@ -333,7 +347,7 @@ class DefaultPixRepository(
 
             val categoriesByWidgetId = widgetCategories
                 .groupBy { it.widgetId }
-                .mapValues { (_, v) -> v.map { it.categoryId } }
+                .mapValues { (_, widgetCategoryList) -> widgetCategoryList.map { it.categoryId } }
 
             val distinctListIds = widgets.map { it.listId }.distinct()
 
@@ -346,32 +360,39 @@ class DefaultPixRepository(
 
                 widgets.mapNotNull { widget ->
                     val pixList = listMap[widget.listId] ?: return@mapNotNull null
+                    val categoriesMap = pixList.categories.associateBy { it.id }
 
-                    PixDashboardWidget(
+                    WidgetData(
                         id = widget.id,
                         pixList = pixList,
                         type = widget.type,
-                        categoryIds = categoriesByWidgetId[widget.id] ?: emptyList()
+                        categories = categoriesByWidgetId[widget.id]?.mapNotNull { categoryId ->
+                            categoriesMap[categoryId]
+                        } ?: emptyList(),
                     )
                 }
             }
         }
     }
 
-    override suspend fun createWidget(listId: Long, type: WidgetType, categories: List<PixCategory>): Long {
-        return dao.upsertWidgetTransaction(
+    override suspend fun createWidget(listId: Long, type: WidgetType, categoryIds: List<Long>): Long {
+        return dao.createWidget(
             widget = PixDashboardWidgetEntity(
                 listId = listId,
                 type = type
             ),
-            categoryIds = categories.map { it.id }
+            categoryIds = categoryIds
         )
     }
 
-    override suspend fun updateWidget(widgetId: Long, categories: List<PixCategory>) {
-        return dao.updateWidgetCategories(
-            widgetId = widgetId,
-            categoryIds = categories.map { it.id }
+    override suspend fun updateWidget(widgetId: Long, pixListId: Long, widgetType: WidgetType, categoryIds: List<Long>) {
+        return dao.updateWidget(
+            widget = PixDashboardWidgetEntity(
+                id = widgetId,
+                listId = pixListId,
+                type = widgetType,
+            ),
+            categoryIds = categoryIds
         )
     }
 

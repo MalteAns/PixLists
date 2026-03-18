@@ -35,13 +35,8 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
 
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.materialIconsExtended) // More Icons
-                implementation(compose.ui)
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
+                // CMP + M3
+                implementation(libs.bundles.compose)
 
                 // Back Handler
                 implementation(libs.ui.backhandler)

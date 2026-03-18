@@ -19,7 +19,9 @@ object SnackbarManager {
     val snackbarMessages = _snackbarMessages.asSharedFlow()
 
     suspend fun showSnackbar(
-        message: String, actionLabel: String? = null, withDismissAction: Boolean = actionLabel != null,
+        message: String,
+        actionLabel: String? = null,
+        withDismissAction: Boolean = actionLabel != null,
         duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite,
         onAction: () -> Unit = {},
     ) {
@@ -27,13 +29,15 @@ object SnackbarManager {
     }
 
     suspend fun showSnackbar(
-        message: StringResource, actionLabel: String? = null, withDismissAction: Boolean = actionLabel != null,
+        message: StringResource,
+        actionLabel: StringResource? = null,
+        withDismissAction: Boolean = actionLabel != null,
         duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite,
         onAction: () -> Unit = {},
     ) {
         showSnackbar(
             message = getString(message),
-            actionLabel = actionLabel,
+            actionLabel = actionLabel?.let { getString(it) },
             withDismissAction = withDismissAction,
             duration = duration,
             onAction = onAction,

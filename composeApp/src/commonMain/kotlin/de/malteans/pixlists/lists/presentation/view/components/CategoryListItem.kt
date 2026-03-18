@@ -36,6 +36,7 @@ fun CategoryListItem(
         modifier = Modifier
             .fillMaxWidth()
     ) {
+        @Suppress("UNCHECKED_CAST")
         Dropdown(
             options = options as Map<Any, String>,
             label = "${stringResource(Res.string.category)} $index",

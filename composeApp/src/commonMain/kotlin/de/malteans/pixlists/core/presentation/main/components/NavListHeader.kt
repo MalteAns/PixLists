@@ -22,7 +22,8 @@ import pixlists.composeapp.generated.resources.app_name
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NavListHeader(
-    onLongClick: () -> Unit,
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {},
 ) {
     Row (
         verticalAlignment = Alignment.CenterVertically,
@@ -30,7 +31,7 @@ fun NavListHeader(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .combinedClickable(
-                onClick = { },
+                onClick = onClick,
                 onLongClick = onLongClick
             )
     ) {

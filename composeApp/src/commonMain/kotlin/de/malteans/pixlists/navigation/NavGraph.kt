@@ -18,6 +18,7 @@ import de.malteans.legal.presentation.screens.LicensesScreen
 import de.malteans.legal.presentation.screens.PrivacyScreen
 import de.malteans.pixlists.colors.presentation.ManageColorsScreenRoot
 import de.malteans.pixlists.core.presentation.main.components.CurScreen
+import de.malteans.pixlists.dashboard.presentation.DashboardScreenRoot
 import de.malteans.pixlists.lists.presentation.stats.ListStatsScreenRoot
 import de.malteans.pixlists.lists.presentation.view.ListViewScreenRoot
 import de.malteans.pixlists.lists.presentation.view.LoadingListViewScreen
@@ -38,12 +39,23 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = Route.List,
+        startDestination = Route.Dashboard,
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { ExitTransition.None },
     ) {
+        navigation<Route.Dashboard>(
+            startDestination = Route.Dashboard.View
+        ) {
+            composable<Route.Dashboard.View> {
+                setCurScreen(CurScreen.DASHBOARD)
+                DashboardScreenRoot(
+                    openDrawer = openDrawer,
+                    openList = { listId -> navController.navigate(Route.List.View(listId)) }
+                )
+            }
+        }
         navigation<Route.List>(
             startDestination = Route.List.View(null)
         ) {
@@ -71,7 +83,7 @@ fun NavGraph(
                 )
             }
         }
-        navigation<Route.ColorsNav>(
+        navigation<Route.Colors>(
             startDestination = Route.Colors.Overview
         ) {
             composable<Route.Colors.Overview> {
@@ -81,7 +93,7 @@ fun NavGraph(
                 )
             }
         }
-        navigation<Route.SettingsNav>(
+        navigation<Route.Settings>(
             startDestination = Route.Settings.Overview
         ) {
             composable<Route.Settings.Overview> (
@@ -96,7 +108,7 @@ fun NavGraph(
                 )
             }
         }
-        navigation<Route.LegalNav>(
+        navigation<Route.Legal>(
             startDestination = LegalRoute.Imprint,
             enterTransition = { slideInHorizontally { it } },
             popExitTransition = { slideOutHorizontally { it } },

@@ -62,15 +62,11 @@ kotlin {
             implementation(projects.legal)
             implementation(projects.dataStore)
 
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+
+            // Compose + Material3
+            implementation(libs.bundles.compose)
 
             // Koin
             api(libs.koin.core)
@@ -95,6 +91,9 @@ kotlin {
             
             // FileKit
             implementation(libs.bundles.filekit)
+
+            // Graphs (Vico)
+            implementation(libs.bundles.vico)
         }
         iosMain.dependencies {
             implementation(projects.dataStore)
