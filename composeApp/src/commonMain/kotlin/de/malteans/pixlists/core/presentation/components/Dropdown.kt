@@ -10,13 +10,13 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Dropdown(
+fun <T> Dropdown(
     label: String? = null,
-    selectedOption: Pair<Any?, String>,
-    options: Map<Any, String>,
-    optionIcon: @Composable ((Any?) -> Unit)? = null,
+    selectedOption: Pair<T?, String>,
+    options: Map<T, String>,
+    optionIcon: @Composable ((T?) -> Unit)? = null,
     initialExpanded: Boolean = false,
-    onValueChanged: (Any) -> Unit,
+    onValueChanged: (T) -> Unit,
     modifier: Modifier= Modifier,
 ) {
     val focusManager = LocalFocusManager.current

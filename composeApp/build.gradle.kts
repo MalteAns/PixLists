@@ -64,6 +64,8 @@ kotlin {
 
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.jetbrains.compose.navigation)
+            implementation(libs.kotlinx.serialization.json)
 
             // Compose + Material3
             implementation(libs.bundles.compose)
@@ -73,8 +75,6 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodel)
-            implementation(libs.jetbrains.compose.navigation)
-            implementation(libs.kotlinx.serialization.json)
 
             // Room
             implementation(libs.androidx.room.runtime)

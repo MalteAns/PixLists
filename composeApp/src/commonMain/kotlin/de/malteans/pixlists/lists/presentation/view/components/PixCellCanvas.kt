@@ -59,7 +59,10 @@ fun PixCellCanvas(
     }
 
     LaunchedEffect(categories) {
-        if (!animation) return@LaunchedEffect
+        if (!animation) {
+            categoriesState = categories
+            return@LaunchedEffect
+        }
         animatedScale.animateTo(
             targetValue = 0f,
             animationSpec = tween(100)

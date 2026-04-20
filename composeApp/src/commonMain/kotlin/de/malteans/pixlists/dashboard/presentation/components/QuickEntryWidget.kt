@@ -29,13 +29,15 @@ fun QuickEntryWidget(
     ) {
         Dropdown(
             selectedOption = Pair(selectedCategory, selectedCategory?.name ?: "—"),
-            options = categories.associateWith { (it as PixCategory).name },
-            onValueChanged = { selectedCategory = (it as PixCategory) },
+            options = categories.associateWith { it.name },
+            onValueChanged = { selectedCategory = it },
             optionIcon = {
-                PixCellCanvas(
-                    categories = listOf(it as PixCategory),
-                    animation = false,
-                )
+                it?.let { category ->
+                    PixCellCanvas(
+                        categories = listOf(category),
+                        animation = false,
+                    )
+                }
             },
             modifier = Modifier.weight(1f),
         )
