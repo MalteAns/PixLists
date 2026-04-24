@@ -14,7 +14,7 @@ androidx-activityCompose = "1.11.0"
 androidx-lifecycle = "2.10.0"
 compose-multiplatform = "1.10.3"
 filekit = "0.13.0"
-kotlin = "2.3.20"
+kotlin = "2.3.21"
 navigationCompose = "2.9.2"
 kotlinSerialization = "1.11.0"
 koin = "4.2.1"
@@ -29,7 +29,7 @@ kotlinxDatetime = "0.7.1-0.6.x-compat"
 
 reorderable = "3.1.0"
 
-kotlinStdlib = "2.3.20"
+kotlinStdlib = "2.3.21"
 aboutLibraries = "14.0.1"
 
 datastore = "1.1.7"
