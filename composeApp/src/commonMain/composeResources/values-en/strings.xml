@@ -5,6 +5,8 @@
     <string name="de">Deutsch</string>
     <string name="select_date">Select Date</string>
     <string name="cancel">Cancel</string>
+    <string name="submit">Submit</string>
+    <string name="delete">Delete</string>
     <string name="monday">Monday</string>
     <string name="tuesday">Tuesday</string>
     <string name="wednesday">Wednesday</string>
