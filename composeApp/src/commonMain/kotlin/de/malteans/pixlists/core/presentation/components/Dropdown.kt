@@ -23,13 +23,16 @@ fun <T> Dropdown(
 
     var expanded by remember { mutableStateOf(initialExpanded) }
 
-    LaunchedEffect(expanded) {
-        if (!expanded) focusManager.clearFocus()
+    val onExpandedChange: (Boolean) -> Unit = { isExpanded ->
+        expanded = isExpanded
+        if (!isExpanded) {
+            focusManager.clearFocus()
+        }
     }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = it },
+        onExpandedChange = { onExpandedChange(it) },
         modifier = modifier
     ) {
         val contentColor = LocalContentColor.current
@@ -68,7 +71,7 @@ fun <T> Dropdown(
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onDismissRequest = { onExpandedChange(false) },
             modifier = Modifier
                 .heightIn(max = 300.dp)
         ) {
@@ -77,7 +80,7 @@ fun <T> Dropdown(
                 DropdownMenuItem(
                     text = { Text(text = text) },
                     onClick = {
-                        expanded = false
+                        onExpandedChange(false)
                         onValueChanged(option)
                     },
                     leadingIcon = if (optionIcon != null) { { optionIcon(option) } }

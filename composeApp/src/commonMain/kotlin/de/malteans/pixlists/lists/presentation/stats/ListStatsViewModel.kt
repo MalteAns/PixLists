@@ -3,18 +3,18 @@ package de.malteans.pixlists.lists.presentation.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.malteans.pixlists.core.domain.PixRepository
-import de.malteans.pixlists.core.presentation.util.getAbsolutMap
+import de.malteans.pixlists.core.presentation.util.getAbsoluteMap
 import de.malteans.pixlists.core.presentation.util.toRelativeMap
 import kotlinx.coroutines.flow.*
 
 class ListStatsViewModel(
-    private val listId: Long,
-    private val repository: PixRepository,
+    listId: Long,
+    repository: PixRepository,
 ): ViewModel() {
 
     private val _curPixList = repository.getCurrentPixList(listId)
 
-    private val _selectedCategoryIds: MutableStateFlow<List<Long>> = MutableStateFlow(emptyList())
+    private val _selectedCategoryIds: MutableStateFlow<Set<Long>> = MutableStateFlow(emptySet())
 
     private val _state = MutableStateFlow(ListStatsState())
 
@@ -23,7 +23,7 @@ class ListStatsViewModel(
     ) { state, curPixList, selectedCategoryIds ->
         val allCategories = curPixList?.categories ?: emptyList()
         val selectedCategories = allCategories.filter { selectedCategoryIds.contains(it.id) }
-        val absoluteMap = curPixList?.entries?.getAbsolutMap(selectedCategories, state.dateRange) ?: emptyMap()
+        val absoluteMap = curPixList?.entries?.getAbsoluteMap(selectedCategories, state.dateRange) ?: emptyMap()
         val relativeMap = absoluteMap.toRelativeMap()
         state.copy(
             allCategories = allCategories,
@@ -48,8 +48,8 @@ class ListStatsViewModel(
             }
             is ListStatsAction.SetAllCategoriesSelected -> {
                 _selectedCategoryIds.update {
-                    if (action.selected) state.value.allCategories.map { it.id }
-                    else emptyList()
+                    if (action.selected) state.value.allCategories.map { it.id }.toSet()
+                    else emptySet()
                 }
             }
 

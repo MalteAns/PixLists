@@ -46,8 +46,8 @@ private fun TextStatisticWidget(
     categories: List<PixCategory>,
     modifier: Modifier = Modifier,
 ) {
-    val absolutMap = pixList.entries.getAbsolutMap(categories)
-    val relativeMap = absolutMap.toRelativeMap()
+    val absoluteMap = pixList.entries.getAbsoluteMap(categories)
+    val relativeMap = absoluteMap.toRelativeMap()
 
     val scrollState = rememberScrollState()
     FadeForScrollList(
@@ -61,7 +61,7 @@ private fun TextStatisticWidget(
                 .verticalScroll(scrollState)
         ) {
             categories.forEach { category ->
-                val absCount = absolutMap[category] ?: 0
+                val absCount = absoluteMap[category] ?: 0
                 val relCount = relativeMap[category] ?: 0.0
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -90,7 +90,7 @@ private fun ColumnChartStatisticWidget(
     modifier: Modifier = Modifier,
 ) {
     val absoluteMap by remember(pixList, categories) { derivedStateOf {
-        pixList.entries.getAbsolutMap(categories)
+        pixList.entries.getAbsoluteMap(categories)
     } }
 
     ColumnChart(

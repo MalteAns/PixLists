@@ -127,8 +127,7 @@ fun DashboardScreen(
                 }
                 return@LazyVerticalGrid
             }
-            items(state.widgets, key = { it.id }) { widget ->
-                val index = state.widgets.indexOf(widget)
+            itemsIndexed(state.widgets, key = { _, widget -> widget.id }) { index, widget ->
                 Column {
                     if (index < lazyGridState.layoutInfo.maxSpan) Spacer(Modifier.height(16.dp))
                     Surface(

@@ -111,6 +111,7 @@ fun WidgetDialog(
                 options = pixLists.associateWith { it.name },
                 onValueChanged = {
                     selectedPixList = it
+                    selectedCategoryIds = emptyList()
                     scope.launch { categoryListScrollState.scrollTo(0) }
                 },
                 initialExpanded = widgetToEdit == null,
@@ -150,12 +151,11 @@ fun WidgetDialog(
                     WidgetType.STATISTICS_COLUMNS to stringResource(Res.string.column_chart),
                     WidgetType.STATISTICS_LINES to stringResource(Res.string.line_chart),
                 )
-                @Suppress("UNCHECKED_CAST")
                 Dropdown(
                     label = stringResource(Res.string.display_type),
                     selectedOption = Pair(selectedType, options[selectedType] ?: ""),
-                    options = options as Map<Any, String>,
-                    onValueChanged = { selectedType = (it as WidgetType) }
+                    options = options,
+                    onValueChanged = { selectedType = it },
                 )
             }
             Spacer(Modifier.height(16.dp))

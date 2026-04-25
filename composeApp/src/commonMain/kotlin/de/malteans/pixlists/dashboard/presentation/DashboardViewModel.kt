@@ -13,9 +13,11 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import pixlists.composeapp.generated.resources.Res
-import pixlists.composeapp.generated.resources.entry_added_succesfully
+import pixlists.composeapp.generated.resources.entry_added_successfully
 import pixlists.composeapp.generated.resources.show_list
 import kotlin.time.Clock
+
+private val hiddenListRegex = Regex("^\\(.*\\)$")
 
 class DashboardViewModel(
     private val repository: PixRepository,
@@ -35,7 +37,7 @@ class DashboardViewModel(
         _widgets,
     ) { state, pixLists, widgets ->
         state.copy(
-            pixLists = pixLists.filterNot { it.name.matches(Regex("^\\(.*\\)$")) },
+            pixLists = pixLists.filterNot { it.name.matches(hiddenListRegex) },
             widgets = widgets,
         )
     }
@@ -69,7 +71,7 @@ class DashboardViewModel(
                     date = today,
                 )
                 SnackbarManager.showSnackbar(
-                    message = Res.string.entry_added_succesfully,
+                    message = Res.string.entry_added_successfully,
                     actionLabel = Res.string.show_list,
                     duration = SnackbarDuration.Short,
                     onAction = { sendEvent(DashboardEvent.OnOpenList(action.pixListId)) },

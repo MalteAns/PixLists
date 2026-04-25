@@ -6,7 +6,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
-fun Map<LocalDate, List<PixCategory>>.getAbsolutMap(
+fun Map<LocalDate, List<PixCategory>>.getAbsoluteMap(
     categories: List<PixCategory>, dateRange: Pair<LocalDate?, LocalDate?>? = null
 ): Map<PixCategory, Int> {
     val absoluteCountMap = categories.associateWith { 0 }.toMutableMap()

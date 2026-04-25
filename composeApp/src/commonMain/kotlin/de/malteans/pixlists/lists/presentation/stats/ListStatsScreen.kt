@@ -61,7 +61,7 @@ fun ListStatsScreen(
             onDismissRequest = { showFilterDialog = false },
             title = { Text(stringResource(Res.string.filter_categories)) },
             leftIcons = {
-                val state by remember(state.selectedCategories, state.allCategories) { derivedStateOf {
+                val triToggleState by remember(state.selectedCategories, state.allCategories) { derivedStateOf {
                     when {
                         state.selectedCategories.isEmpty() -> ToggleableState.Off
                         state.selectedCategories.size == state.allCategories.size -> ToggleableState.On
@@ -69,10 +69,10 @@ fun ListStatsScreen(
                     }
                 } }
                 TriStateCheckbox(
-                    state = state,
+                    state = triToggleState,
                     onClick = {
                         onAction(ListStatsAction.SetAllCategoriesSelected(
-                            selected = state != ToggleableState.On
+                            selected = triToggleState != ToggleableState.On
                         ))
                     }
                 )
