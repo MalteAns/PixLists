@@ -52,7 +52,7 @@ kotlin {
         androidMain.dependencies {
             implementation(projects.dataStore)
 
-            implementation(compose.preview)
+            implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.koin.android)
@@ -62,23 +62,22 @@ kotlin {
             implementation(projects.legal)
             implementation(projects.dataStore)
 
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.kotlinx.serialization.json)
+
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+
+            implementation(libs.bundles.compose)
+            implementation(libs.jetbrains.compose.navigation)
+
+            implementation(libs.compose.material3)
+            implementation(libs.compose.material.icons.extended) // More Icons
 
             // Koin
             api(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodel)
-            implementation(libs.jetbrains.compose.navigation)
-            implementation(libs.kotlinx.serialization.json)
 
             // Room
             implementation(libs.androidx.room.runtime)
@@ -132,7 +131,7 @@ android {
 }
 
 dependencies {
-    debugImplementation(compose.uiTooling)
+    debugImplementation(libs.compose.ui.tooling)
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
     add("kspIosSimulatorArm64", libs.androidx.room.compiler)

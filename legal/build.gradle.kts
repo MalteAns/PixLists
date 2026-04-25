@@ -35,13 +35,9 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
 
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.materialIconsExtended) // More Icons
-                implementation(compose.ui)
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
+                implementation(libs.bundles.compose)
+                implementation(libs.compose.material3)
+                implementation(libs.compose.material.icons.extended) // More Icons
 
                 // Back Handler
                 implementation(libs.ui.backhandler)
@@ -57,7 +53,7 @@ kotlin {
 
         androidMain {
             dependencies {
-                implementation(compose.preview)
+                implementation(libs.compose.ui.tooling.preview)
                 implementation(libs.androidx.activity.compose)
             }
         }
