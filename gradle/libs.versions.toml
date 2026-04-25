@@ -10,52 +10,54 @@ projectVersionCode = "7"
 projectVersionName = "1.0.1"
 projectVersionNameSuffix = "-beta1"
 
+kotlin = "2.3.21"
+kotlinStdlib = "2.3.21"
+kotlinSerialization = "1.11.0"
+kotlinxDatetime = "0.7.1-0.6.x-compat"
+
 androidx-activityCompose = "1.11.0"
-androidx-lifecycle = "2.9.6"
-compose-multiplatform = "1.10.2"
+androidx-lifecycle = "2.10.0"
+
+compose-multiplatform = "1.10.3"
+navigationCompose = "2.9.2"
 material3 = "1.9.0"
 materialIconsExtended = "1.7.3"
 
-kotlin = "2.3.10"
-navigationCompose = "2.9.2"
-kotlinSerialization = "1.10.0"
-koin = "4.1.1"
+koin = "4.2.1"
 
-ksp = "2.3.6"
+ksp = "2.3.7"
 sqlite = "2.6.1"
 room = "2.8.3"
-uiAndroid = "1.9.4"
-roomKtx = "2.8.3"
-
-kotlinxDatetime = "0.7.1-0.6.x-compat"
-
-reorderable = "3.0.0"
-
-kotlinStdlib = "2.3.10"
-aboutLibraries = "13.2.1"
 
 datastore = "1.1.7"
 
-filekit = "0.13.0"
+aboutLibraries = "14.0.1"
 
+filekit = "0.13.0"
+reorderable = "3.1.0"
 vico = "3.0.3"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-jetbrains-compose-navigation = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref= "navigationCompose"}
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 
-# CMP ---------------------------------------------
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+
+# Compose -----------------------------------------
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
-compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
-compose-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+
+jetbrains-compose-navigation = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref= "navigationCompose"}
 
 # Koin --------------------------------------------
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
@@ -68,14 +70,11 @@ koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", ver
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
-androidx-ui-android = { group = "androidx.compose.ui", name = "ui-android", version.ref = "uiAndroid" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 
 # Reorderable -------------------------------------
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 # About Libraries ---------------------------------
-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
 aboutlibraries-compose-core = { module = "com.mikepenz:aboutlibraries-compose-core", version.ref = "aboutLibraries" }
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 
@@ -109,13 +108,11 @@ aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "abo
 
 [bundles]
 compose = [
-    "compose-runtime",
     "compose-foundation",
-    "compose-ui",
     "compose-components-resources",
-    "compose-uiToolingPreview",
-    "compose-material3",
-    "compose-icons-extended"
+    "compose-runtime",
+    "compose-ui",
+    "compose-ui-tooling-preview"
 ]
 filekit = ["filekit-core", "filekit-dialogs-compose"]
 vico = ["vico-compose", "vico-compose-m3"]
