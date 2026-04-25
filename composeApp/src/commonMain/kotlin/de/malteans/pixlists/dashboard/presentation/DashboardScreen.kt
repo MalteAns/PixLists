@@ -2,9 +2,7 @@ package de.malteans.pixlists.dashboard.presentation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.Settings
@@ -12,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.malteans.pixlists.core.presentation.components.CustomTopBar
@@ -23,10 +22,7 @@ import de.malteans.pixlists.dashboard.presentation.components.StatisticWidget
 import de.malteans.pixlists.dashboard.presentation.components.WidgetDialog
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import pixlists.composeapp.generated.resources.Res
-import pixlists.composeapp.generated.resources.add_widget
-import pixlists.composeapp.generated.resources.app_name
-import pixlists.composeapp.generated.resources.edit_widget
+import pixlists.composeapp.generated.resources.*
 
 @Composable
 fun DashboardScreenRoot(
@@ -101,7 +97,9 @@ fun DashboardScreen(
             )
         }
     ) { innerPadding ->
+        val lazyGridState = rememberLazyGridState()
         LazyVerticalGrid(
+            state = lazyGridState,
             columns = GridCells.Adaptive(300.dp),
             verticalArrangement = spacedBy(16.dp),
             horizontalArrangement = spacedBy(16.dp),
@@ -110,10 +108,29 @@ fun DashboardScreen(
                 .padding(horizontal = 16.dp)
                 .padding(innerPadding)
         ) {
+            if (state.widgets.isEmpty()) {
+                item(
+                    span = { GridItemSpan(maxLineSpan) },
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .padding(top = 64.dp)
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.dashboard_no_widgets_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+                return@LazyVerticalGrid
+            }
             items(state.widgets, key = { it.id }) { widget ->
                 val index = state.widgets.indexOf(widget)
                 Column {
-                    if (index == 0) Spacer(Modifier.height(16.dp))
+                    if (index <= lazyGridState.layoutInfo.maxSpan) Spacer(Modifier.height(16.dp))
                     Surface(
                         color = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,

@@ -62,6 +62,8 @@
     <string name="rename_list">Rename list</string>
 
     <!-- Dashboard Screen __________________________________________________________________________________________ -->
+    <string name="dashboard_no_widgets_title">Your person dashboard</string>
+    <string name="dashboard_no_widgets_desc">Add a widget via the button in the top right corner, to customize your personal dashboard for the perfect overview.</string>
     <string name="quick_entry">Quick Entry</string>
     <string name="statistics">Statistics</string>
     <string name="pie_chart">Pie chart</string>

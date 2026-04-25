@@ -62,6 +62,8 @@
     <string name="rename_list">Liste umbenennen</string>
 
     <!-- Dashboard Screen __________________________________________________________________________________________ -->
+    <string name="dashboard_no_widgets_title">Dein persönliches Dashboard</string>
+    <string name="dashboard_no_widgets_desc">Füge über den Button oben rechts Widgets hinzu, um ein persönliches Dashboard für den perfekten Überblick zu erstellen.</string>
     <string name="quick_entry">Schnelleintrag</string>
     <string name="statistics">Statistiken</string>
     <string name="pie_chart">Kreisdiagramm</string>
