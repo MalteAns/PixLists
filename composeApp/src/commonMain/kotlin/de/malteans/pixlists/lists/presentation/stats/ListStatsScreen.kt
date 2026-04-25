@@ -181,7 +181,7 @@ fun ListStatsScreen(
                         .padding(bottom = 16.dp)
                 ) {
                     ColumnChart(
-                        dataMap = state.absoluteMap.mapKeys { it.key.name }.mapValues { it.value.toDouble() },
+                        dataMap = state.absoluteMap.mapValues { it.value.toDouble() },
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         modifier = Modifier.padding(16.dp)
                     )

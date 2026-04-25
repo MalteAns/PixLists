@@ -28,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.*
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun WidgetDialog(
@@ -66,7 +67,7 @@ fun WidgetDialog(
             var deleteClicked by remember { mutableStateOf(false) }
             LaunchedEffect(deleteClicked) {
                 if (deleteClicked) {
-                    delay(2000)
+                    delay(2.seconds)
                     deleteClicked = false
                 }
             }
@@ -107,9 +108,9 @@ fun WidgetDialog(
             Text(stringResource(Res.string.select_pixlist), style = MaterialTheme.typography.titleMedium)
             Dropdown(
                 selectedOption = Pair(selectedPixList, selectedPixList?.name ?: ""),
-                options = pixLists.associateWith { (it as PixList).name },
+                options = pixLists.associateWith { it.name },
                 onValueChanged = {
-                    selectedPixList = (it as PixList)
+                    selectedPixList = it
                     scope.launch { categoryListScrollState.scrollTo(0) }
                 },
                 initialExpanded = widgetToEdit == null,
@@ -147,7 +148,7 @@ fun WidgetDialog(
                     WidgetType.STATISTICS to stringResource(Res.string.text),
 //                    WidgetType.STATISTICS_PIE to stringResource(Res.string.pie_chart),
                     WidgetType.STATISTICS_COLUMNS to stringResource(Res.string.column_chart),
-//                    WidgetType.STATISTICS_LINES to "${stringResource(Res.string.line_chart)} (${stringResource(Res.string.with_time)})",
+                    WidgetType.STATISTICS_LINES to stringResource(Res.string.line_chart),
                 )
                 @Suppress("UNCHECKED_CAST")
                 Dropdown(

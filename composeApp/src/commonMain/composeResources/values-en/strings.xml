@@ -79,12 +79,12 @@
     <string name="add_entry_today">Add entry for today</string>
     <string name="no_categories_available">No categories available</string>
     <string name="select_pixlist_first">Select a PixList first</string>
-    <string name="with_time">with time</string>
     <string name="text">Text</string>
     <string name="display_type">Display type</string>
     <string name="quick_entry_heading">Quick entry for '%1$s'</string>
     <string name="statistics_heading">Statistics for '%1$s'</string>
     <string name="edit_widget">Edit widget</string>
+    <string name="no_data_available">No data available</string>
 
     <!-- Stats Screen ______________________________________________________________________________________________ -->
     <string name="list_statistics">List Statistics</string>

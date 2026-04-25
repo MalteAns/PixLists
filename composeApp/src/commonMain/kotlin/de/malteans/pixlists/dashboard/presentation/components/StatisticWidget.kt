@@ -20,9 +20,7 @@ import androidx.compose.ui.util.fastRoundToInt
 import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixList
 import de.malteans.pixlists.core.presentation.components.FadeForScrollList
-import de.malteans.pixlists.core.presentation.util.ColumnChart
-import de.malteans.pixlists.core.presentation.util.getAbsolutMap
-import de.malteans.pixlists.core.presentation.util.toRelativeMap
+import de.malteans.pixlists.core.presentation.util.*
 import de.malteans.pixlists.dashboard.domain.WidgetType
 import de.malteans.pixlists.lists.presentation.view.components.PixCellCanvas
 
@@ -37,7 +35,7 @@ fun StatisticWidget(
         WidgetType.STATISTICS -> TextStatisticWidget(pixList, categories, modifier)
         WidgetType.STATISTICS_PIE -> { Text("Coming soon...") } // TODO
         WidgetType.STATISTICS_COLUMNS -> ColumnChartStatisticWidget(pixList, categories, modifier)
-        WidgetType.STATISTICS_LINES -> TODO()
+        WidgetType.STATISTICS_LINES -> LineChartStatisticWidget(pixList, categories, modifier)
         else -> throw IllegalArgumentException("Invalid widget type for StatisticWidget: $type")
     }
 }
@@ -96,9 +94,24 @@ private fun ColumnChartStatisticWidget(
     } }
 
     ColumnChart(
-        dataMap = absoluteMap.mapKeys { it.key.name }.mapValues { it.value.toDouble() },
+        dataMap = absoluteMap.mapValues { it.value.toDouble() },
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         modifier = modifier
     )
 }
 
+@Composable
+private fun LineChartStatisticWidget(
+    pixList: PixList,
+    categories: List<PixCategory>,
+    modifier: Modifier = Modifier,
+) {
+    val lineChartData by remember(pixList, categories) { derivedStateOf {
+        pixList.entries.getLineChartData(categories)
+    } }
+
+    LineChart(
+        data = lineChartData,
+        modifier = modifier
+    )
+}

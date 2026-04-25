@@ -130,7 +130,7 @@ fun DashboardScreen(
             items(state.widgets, key = { it.id }) { widget ->
                 val index = state.widgets.indexOf(widget)
                 Column {
-                    if (index <= lazyGridState.layoutInfo.maxSpan) Spacer(Modifier.height(16.dp))
+                    if (index < lazyGridState.layoutInfo.maxSpan) Spacer(Modifier.height(16.dp))
                     Surface(
                         color = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,

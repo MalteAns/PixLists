@@ -118,19 +118,19 @@ interface PixDao {
     fun getAllWidgetCategories(): Flow<List<PixDashboardWidgetCategoryEntity>>
 
     @Upsert
-    fun upsertWidget(widget: PixDashboardWidgetEntity): Long
+    suspend fun upsertWidget(widget: PixDashboardWidgetEntity): Long
 
     @Insert
-    fun insertWidgetCategory(widgetCategory: PixDashboardWidgetCategoryEntity)
+    suspend fun insertWidgetCategory(widgetCategory: PixDashboardWidgetCategoryEntity)
 
     @Query("DELETE FROM pixdashboardwidgetcategoryentity WHERE widgetId = :widgetId")
-    fun deleteWidgetCategoriesByWidgetId(widgetId: Long)
+    suspend fun deleteWidgetCategoriesByWidgetId(widgetId: Long)
 
     @Query("DELETE FROM pixdashboardwidgetentity WHERE id = :widgetId")
-    fun deleteWidgetById(widgetId: Long)
+    suspend fun deleteWidgetById(widgetId: Long)
 
     @Transaction
-    fun createWidget(widget: PixDashboardWidgetEntity, categoryIds: List<Long>): Long {
+    suspend fun createWidget(widget: PixDashboardWidgetEntity, categoryIds: List<Long>): Long {
         val widgetId = upsertWidget(widget)
         categoryIds.forEach { categoryId ->
             insertWidgetCategory(
@@ -144,7 +144,7 @@ interface PixDao {
     }
 
     @Transaction
-    fun updateWidget(widget: PixDashboardWidgetEntity, categoryIds: List<Long>) {
+    suspend fun updateWidget(widget: PixDashboardWidgetEntity, categoryIds: List<Long>) {
         upsertWidget(widget)
         // Delete existing categories for the widget
         deleteWidgetCategoriesByWidgetId(widget.id)

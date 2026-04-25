@@ -79,12 +79,12 @@
     <string name="add_entry_today">Eintrag für heute hinzufügen</string>
     <string name="no_categories_available">Keine Kategorien verfügbar</string>
     <string name="select_pixlist_first">Wähle zuerst eine PixList aus</string>
-    <string name="with_time">mit Zeitpunkt</string>
     <string name="text">Text</string>
     <string name="display_type">Anzeige-Typ</string>
     <string name="quick_entry_heading">Schnelleintrag für '%1$s'</string>
     <string name="statistics_heading">Statistiken für '%1$s'</string>
     <string name="edit_widget">Widget bearbeiten</string>
+    <string name="no_data_available">Keine Daten verfügbar</string>
 
     <!-- Stats Screen ______________________________________________________________________________________________ -->
     <string name="list_statistics">Listen Statistiken</string>

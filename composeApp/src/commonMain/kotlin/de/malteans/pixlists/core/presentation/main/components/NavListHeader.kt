@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
@@ -29,11 +30,13 @@ fun NavListHeader(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 8.dp)
+            .clip(RoundedCornerShape(50))
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
+            .padding(8.dp)
     ) {
         Column {
             Surface(

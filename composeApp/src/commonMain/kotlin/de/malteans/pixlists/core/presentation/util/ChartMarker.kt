@@ -40,6 +40,7 @@ import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
 @Composable
 internal fun rememberMarker(
     valueFormatter: DefaultCartesianMarker.ValueFormatter = DefaultCartesianMarker.ValueFormatter.default(),
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
     containerColor: Color = MaterialTheme.colorScheme.surface,
     showIndicator: Boolean = true,
 ): CartesianMarker {
@@ -55,7 +56,7 @@ internal fun rememberMarker(
         rememberTextComponent(
             style =
                 TextStyle(
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = textColor,
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp,
                 ),
