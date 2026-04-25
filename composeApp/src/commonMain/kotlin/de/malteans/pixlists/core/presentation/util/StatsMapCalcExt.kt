@@ -40,22 +40,25 @@ fun Map<LocalDate, List<PixCategory>>.getLineChartData(
 ): Map<PixCategory, List<Pair<LocalDate, Int>>> {
     if (categories.isEmpty() || this.isEmpty()) return emptyMap()
 
-    val result = mutableMapOf<PixCategory, List<Pair<LocalDate, Int>>>()
+    val result = mutableMapOf<PixCategory, MutableList<Pair<LocalDate, Int>>>()
 
     val sortedEntries = this.entries.sortedBy { it.key }
     val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val lastDate = maxOf(sortedEntries.last().key, currentDate)
 
     categories.forEach { category ->
+        val currentList = mutableListOf<Pair<LocalDate, Int>>()
+        result[category] = currentList
+
         sortedEntries.forEach { (date, entryCategories) ->
             if (entryCategories.contains(category)) {
-                val currentList = result[category] ?: emptyList()
-                result[category] = currentList + (date to (currentList.lastOrNull()?.second ?: 0) + 1)
+                val nextCount = (currentList.lastOrNull()?.second ?: 0) + 1
+                currentList.add(date to nextCount)
             }
         }
-        val currentList = result[category] ?: emptyList()
-        result [category] = currentList + (lastDate to (currentList.lastOrNull()?.second ?: 0))
+
+        currentList.add(lastDate to (currentList.lastOrNull()?.second ?: 0))
     }
 
-    return result
+    return result.mapValues { (_, values) -> values.toList() }
 }
