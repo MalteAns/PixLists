@@ -5,6 +5,8 @@
     <string name="de">Deutsch</string>
     <string name="select_date">Datum wählen</string>
     <string name="cancel">Abbrechen</string>
+    <string name="submit">Bestätigen</string>
+    <string name="delete">Löschen</string>
     <string name="monday">Montag</string>
     <string name="tuesday">Dienstag</string>
     <string name="wednesday">Mittwoch</string>
@@ -60,6 +62,35 @@
     <string name="all">Alle</string>
 
     <string name="rename_list">Liste umbenennen</string>
+
+    <!-- Dashboard Screen __________________________________________________________________________________________ -->
+    <string name="dashboard_no_widgets_title">Dein persönliches Dashboard</string>
+    <string name="dashboard_no_widgets_desc">Füge über den Button oben rechts Widgets hinzu, um ein persönliches Dashboard für den perfekten Überblick zu erstellen.</string>
+    <string name="quick_entry">Schnelleintrag</string>
+    <string name="statistics">Statistiken</string>
+    <string name="pie_chart">Kreisdiagramm</string>
+    <string name="column_chart">Säulendiagramm</string>
+    <string name="bar_chart">Balkendiagramm</string>
+    <string name="line_chart">Liniendiagramm</string>
+    <string name="entry_added_successfully">Eintrag erfolgreich hinzugefügt</string>
+    <string name="show_list">Liste anzeigen</string>
+    <string name="add_widget">Widget hinzufügen</string>
+    <string name="select_pixlist">PixList auswählen</string>
+    <string name="widget_type">Widget-Typ</string>
+    <string name="categories_select">Kategorien (mindestens eine auswählen)</string>
+    <string name="add_entry_today">Eintrag für heute hinzufügen</string>
+    <string name="no_categories_available">Keine Kategorien verfügbar</string>
+    <string name="select_pixlist_first">Wähle zuerst eine PixList aus</string>
+    <string name="text">Text</string>
+    <string name="display_type">Anzeige-Typ</string>
+    <string name="quick_entry_heading">Schnelleintrag für '%1$s'</string>
+    <string name="statistics_heading">Statistiken für '%1$s'</string>
+    <string name="edit_widget">Widget bearbeiten</string>
+    <string name="no_data_available">Keine Daten verfügbar</string>
+    <string name="save">Speichern</string>
+    <string name="done">Fertig</string>
+    <string name="reorder_widgets">Widgets neu anordnen</string>
+    <string name="drag_to_reorder">Zum Umordnen ziehen</string>
 
     <!-- Stats Screen ______________________________________________________________________________________________ -->
     <string name="list_statistics">Listen Statistiken</string>

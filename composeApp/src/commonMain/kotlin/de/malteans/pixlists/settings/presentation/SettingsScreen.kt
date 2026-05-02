@@ -131,7 +131,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(top = 16.dp)
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = 16.dp)
                 .padding(paddingValues)
         ) {
             Column(

@@ -6,9 +6,9 @@ android-minSdk = "30"
 android-targetSdk = "36"
 
 applicationId = "de.malteans.pixlists"
-projectVersionCode = "6"
+projectVersionCode = "7"
 projectVersionName = "1.0.1"
-projectVersionNameSuffix = "-pre"
+projectVersionNameSuffix = "-beta1"
 
 kotlin = "2.3.21"
 kotlinStdlib = "2.3.21"
@@ -35,6 +35,7 @@ aboutLibraries = "14.0.1"
 
 filekit = "0.13.0"
 reorderable = "3.1.0"
+vico = "3.0.3"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
@@ -81,6 +82,10 @@ aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3",
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
 
+# Graphs (Vico) ------------------------------------
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
+vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+
 # == Data Store ============================
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
@@ -110,3 +115,4 @@ compose = [
     "compose-ui-tooling-preview"
 ]
 filekit = ["filekit-core", "filekit-dialogs-compose"]
+vico = ["vico-compose", "vico-compose-m3"]

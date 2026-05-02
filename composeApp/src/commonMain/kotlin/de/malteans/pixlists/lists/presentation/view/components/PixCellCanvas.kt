@@ -30,6 +30,7 @@ fun PixCellCanvas(
     categories: List<PixCategory>,
     isToday: Boolean = false,
     enabled: Boolean = false,
+    animation: Boolean = true,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,
@@ -50,6 +51,7 @@ fun PixCellCanvas(
     var categoriesState by remember { mutableStateOf(categories) }
 
     LaunchedEffect(Unit) {
+        if (!animation) return@LaunchedEffect
         animatedScale.animateTo(
             targetValue = 1f,
             animationSpec = tween(200, easing = EaseOutBack),
@@ -57,6 +59,10 @@ fun PixCellCanvas(
     }
 
     LaunchedEffect(categories) {
+        if (!animation) {
+            categoriesState = categories
+            return@LaunchedEffect
+        }
         animatedScale.animateTo(
             targetValue = 0f,
             animationSpec = tween(100)

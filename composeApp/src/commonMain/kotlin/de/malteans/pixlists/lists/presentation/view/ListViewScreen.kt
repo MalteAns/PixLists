@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -211,6 +212,7 @@ fun ListViewScreen(
                                     Text(
                                         text = year.toString(),
                                         style = MaterialTheme.typography.bodySmall,
+                                        textAlign = TextAlign.Center,
                                         color = localContentColor.copy(
                                             alpha = if (index == state.selectedYearIndex) 1f
                                                 else 0.4f,

@@ -94,6 +94,9 @@ kotlin {
             
             // FileKit
             implementation(libs.bundles.filekit)
+
+            // Graphs (Vico)
+            implementation(libs.bundles.vico)
         }
         iosMain.dependencies {
             implementation(projects.dataStore)

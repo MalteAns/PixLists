@@ -4,14 +4,12 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import de.malteans.pixlists.core.data.database.entities.PixCategoryEntity
-import de.malteans.pixlists.core.data.database.entities.PixColorEntity
-import de.malteans.pixlists.core.data.database.entities.PixEntryEntity
-import de.malteans.pixlists.core.data.database.entities.PixListEntity
+import de.malteans.pixlists.core.data.database.entities.*
 
 @Database(
-    entities = [PixListEntity::class, PixEntryEntity::class, PixCategoryEntity::class, PixColorEntity::class],
-    version = 3,
+    entities = [PixListEntity::class, PixEntryEntity::class, PixCategoryEntity::class, PixColorEntity::class,
+        PixDashboardWidgetEntity::class, PixDashboardWidgetCategoryEntity::class],
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(

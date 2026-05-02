@@ -1,10 +1,10 @@
 package de.malteans.pixlists.lists.presentation.view.components
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Warning
@@ -24,6 +24,7 @@ import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.presentation.components.CustomDialog
 import de.malteans.pixlists.core.presentation.components.Dropdown
 import de.malteans.pixlists.core.presentation.components.customIcons.FilledPixIcon
+import de.malteans.pixlists.core.presentation.util.AnimatedDoubleIconButton
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.*
@@ -80,24 +81,15 @@ fun CategoryDialog(
             }
         },
         rightIcons = {
-            val animationDuration = 150
-            val enterAnimation = scaleIn(
-                animationSpec = tween(durationMillis = animationDuration, delayMillis = animationDuration),
-            )
-            val exitAnimation = scaleOut(
-                animationSpec = tween(durationMillis = animationDuration),
-            )
             val showDelete by remember { derivedStateOf {
                 nameField.text.trim() == (categoryToEdit?.name ?: "") && color == categoryToEdit?.color
             } }
-
             val validToSubmit by remember { derivedStateOf {
                 nameField.text.isNotBlank() && color != null &&
                     (!invalidNames.contains(nameField.text.trim())
                         xor
                     (nameField.text.trim() == (categoryToEdit?.name ?: "")))
             } }
-
             var deleteClicked by remember { mutableStateOf(false) }
             LaunchedEffect(deleteClicked) {
                 if (deleteClicked) {
@@ -105,7 +97,9 @@ fun CategoryDialog(
                     deleteClicked = false
                 }
             }
-            IconButton(
+            AnimatedDoubleIconButton(
+                showSecondary = showDelete,
+                enabled = showDelete || validToSubmit,
                 onClick = {
                     if (showDelete) {
                         if (deleteClicked) onDelete()
@@ -116,21 +110,7 @@ fun CategoryDialog(
                         isEdit
                     )
                 },
-                enabled = showDelete || validToSubmit,
-            ) {
-                AnimatedVisibility(
-                    visible = !showDelete, enter = enterAnimation, exit = exitAnimation,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Submit",
-                        tint = if (validToSubmit) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                    )
-                }
-                AnimatedVisibility(
-                    visible = showDelete, enter = enterAnimation, exit = exitAnimation,
-                ) {
+                secondaryIcon = {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
@@ -138,7 +118,7 @@ fun CategoryDialog(
                             else MaterialTheme.colorScheme.onSurface,
                     )
                 }
-            }
+            )
         },
     ) {
         val invalid = invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (categoryToEdit?.name ?: "")

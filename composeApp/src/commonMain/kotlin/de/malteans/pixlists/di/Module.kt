@@ -12,6 +12,7 @@ import de.malteans.pixlists.core.data.repository.DefaultPixRepository
 import de.malteans.pixlists.core.domain.DataStoreRepository
 import de.malteans.pixlists.core.domain.PixRepository
 import de.malteans.pixlists.core.presentation.main.MainViewModel
+import de.malteans.pixlists.dashboard.presentation.DashboardViewModel
 import de.malteans.pixlists.lists.presentation.stats.ListStatsViewModel
 import de.malteans.pixlists.lists.presentation.view.ListViewViewModel
 import de.malteans.pixlists.settings.presentation.SettingsViewModel
@@ -36,6 +37,7 @@ val sharedModule = module {
     single<PixRepository> { DefaultPixRepository(get()) }
 
     viewModelOf(::MainViewModel)
+    viewModelOf(::DashboardViewModel)
     viewModelOf(::ListViewViewModel)
     viewModel { params -> ListStatsViewModel(params.get(), get()) }
     viewModelOf(::ManageColorsViewModel)

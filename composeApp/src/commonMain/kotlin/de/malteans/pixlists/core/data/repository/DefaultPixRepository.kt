@@ -1,10 +1,7 @@
 package de.malteans.pixlists.core.data.repository
 
 import de.malteans.pixlists.core.data.database.PixDao
-import de.malteans.pixlists.core.data.database.entities.PixCategoryEntity
-import de.malteans.pixlists.core.data.database.entities.PixColorEntity
-import de.malteans.pixlists.core.data.database.entities.PixEntryEntity
-import de.malteans.pixlists.core.data.database.entities.PixListEntity
+import de.malteans.pixlists.core.data.database.entities.*
 import de.malteans.pixlists.core.data.mappers.toDomain
 import de.malteans.pixlists.core.data.mappers.toEntity
 import de.malteans.pixlists.core.data.mappers.toJsonDto
@@ -13,10 +10,10 @@ import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.domain.PixList
 import de.malteans.pixlists.core.domain.PixRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+import de.malteans.pixlists.dashboard.domain.WidgetData
+import de.malteans.pixlists.dashboard.domain.WidgetType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -27,7 +24,7 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalCoroutinesApi::class)
 class DefaultPixRepository(
     private val dao: PixDao,
 ) : PixRepository {
@@ -43,6 +40,20 @@ class DefaultPixRepository(
 
     override suspend fun renameList(listId: Long, newName: String) {
         dao.renameList(listId, newName)
+    }
+
+    override fun getAllPixLists(): Flow<List<PixList>> {
+        return dao.getAllLists().flatMapLatest { allLists ->
+            if (allLists.isEmpty()) return@flatMapLatest flowOf(emptyList())
+
+            val listFlows = allLists.map { listEntity ->
+                getCurrentPixList(listEntity.id)
+            }
+
+            combine(listFlows) { lists ->
+                lists.filterNotNull()
+            }
+        }
     }
 
     override fun getAllPixListsWithoutData(): Flow<List<PixList>> {
@@ -322,5 +333,79 @@ class DefaultPixRepository(
             }
         }
         return Result.success(Unit)
+    }
+
+    // Widget Operations ----------------------------------------------------------------------------------------------
+    override fun getAllWidgets(): Flow<List<WidgetData>> {
+        return combine(
+            dao.getAllWidgets(),
+            dao.getAllWidgetCategories(),
+        ) { widgets, widgetCategories ->
+            widgets to widgetCategories
+        }.flatMapLatest { (widgets, widgetCategories) ->
+            if (widgets.isEmpty()) return@flatMapLatest flowOf(emptyList())
+
+            val categoriesByWidgetId = widgetCategories
+                .groupBy { it.widgetId }
+                .mapValues { (_, widgetCategoryList) -> widgetCategoryList.map { it.categoryId } }
+
+            val distinctListIds = widgets.map { it.listId }.distinct()
+
+            val listFlows = distinctListIds.map { listId ->
+                getCurrentPixList(listId).map { listId to it }
+            }
+
+            combine(listFlows) { listPairs ->
+                val listMap = listPairs.toMap()
+
+                widgets.mapNotNull { widget ->
+                    val pixList = listMap[widget.listId] ?: return@mapNotNull null
+                    val categoriesMap = pixList.categories.associateBy { it.id }
+
+                    WidgetData(
+                        id = widget.id,
+                        pixList = pixList,
+                        type = widget.type,
+                        categories = categoriesByWidgetId[widget.id]?.mapNotNull { categoryId ->
+                            categoriesMap[categoryId]
+                        } ?: emptyList(),
+                        orderIndex = widget.orderIndex,
+                    )
+                }
+            }
+        }
+    }
+
+    override suspend fun createWidget(listId: Long, type: WidgetType, categoryIds: List<Long>): Long {
+        return dao.createWidget(
+            widget = PixDashboardWidgetEntity(
+                listId = listId,
+                type = type,
+            ),
+            categoryIds = categoryIds
+        )
+    }
+
+    override suspend fun updateWidget(widgetId: Long, pixListId: Long, widgetType: WidgetType, categoryIds: List<Long>) {
+        val existingWidget = dao.getWidgetById(widgetId)
+        return dao.updateWidget(
+            widget = PixDashboardWidgetEntity(
+                id = widgetId,
+                listId = pixListId,
+                type = widgetType,
+                orderIndex = existingWidget?.orderIndex ?: 0
+            ),
+            categoryIds = categoryIds
+        )
+    }
+
+    override suspend fun updateWidgetOrder(widgetIds: List<Long>) {
+        widgetIds.forEachIndexed { index, widgetId ->
+            dao.updateWidgetOrderIndex(widgetId, index)
+        }
+    }
+
+    override suspend fun deleteWidget(widgetId: Long) {
+        dao.deleteWidgetById(widgetId)
     }
 }

@@ -4,6 +4,14 @@ import kotlinx.serialization.Serializable
 
 sealed interface Route {
     @Serializable
+    data object Dashboard : Route {
+        @Serializable
+        data object View : Route
+        @Serializable
+        data object Edit : Route
+    }
+
+    @Serializable
     data object List : Route {
         @Serializable
         data object Loading : Route
@@ -18,21 +26,17 @@ sealed interface Route {
     }
 
     @Serializable
-    data object ColorsNav : Route
-    @Serializable
-    sealed interface Colors : Route {
+    data object Colors : Route {
         @Serializable
-        data object Overview : Colors
+        data object Overview : Route
     }
 
     @Serializable
-    data object SettingsNav : Route
-    @Serializable
-    sealed interface Settings : Route {
+    data object Settings : Route {
         @Serializable
-        data object Overview : Settings
+        data object Overview : Route
     }
 
     @Serializable
-    data object LegalNav : Route
+    data object Legal : Route
 }

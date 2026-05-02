@@ -5,46 +5,73 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Dropdown(
-    modifier: Modifier,
-    label: String,
-    selectedOption: Pair<Any?, String>,
-    options: Map<Any, String>,
-    onValueChanged: (Any) -> Unit,
-    optionIcon: @Composable ((Any?) -> Unit)? = null,
+fun <T> Dropdown(
+    label: String? = null,
+    selectedOption: Pair<T?, String>,
+    options: Map<T, String>,
+    optionIcon: @Composable ((T?) -> Unit)? = null,
     initialExpanded: Boolean = false,
+    onValueChanged: (T) -> Unit,
+    modifier: Modifier= Modifier,
 ) {
+    val focusManager = LocalFocusManager.current
+
     var expanded by remember { mutableStateOf(initialExpanded) }
+
+    val onExpandedChange: (Boolean) -> Unit = { isExpanded ->
+        expanded = isExpanded
+        if (!isExpanded) {
+            focusManager.clearFocus()
+        }
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = it },
+        onExpandedChange = { onExpandedChange(it) },
         modifier = modifier
     ) {
+        val contentColor = LocalContentColor.current
+        val unfocusedContentColor = contentColor.copy(alpha = 0.7f)
+        val unfocusedBorderColor = contentColor.copy(alpha = 0.5f)
+
+        val textFieldColors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = contentColor,
+            unfocusedTextColor = contentColor,
+            focusedLeadingIconColor = contentColor,
+            unfocusedLeadingIconColor = unfocusedContentColor,
+            focusedTrailingIconColor = contentColor,
+            unfocusedTrailingIconColor = unfocusedContentColor,
+            focusedLabelColor = contentColor,
+            unfocusedLabelColor = unfocusedContentColor,
+            focusedBorderColor = contentColor,
+            unfocusedBorderColor = unfocusedBorderColor,
+        )
+
         OutlinedTextField(
             readOnly = true,
             value = selectedOption.second,
             onValueChange = { },
+            colors = textFieldColors,
             leadingIcon = if (optionIcon != null) { { optionIcon(selectedOption.first) } }
                 else null,
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
-            label = { Text(label) },
-            colors = OutlinedTextFieldDefaults.colors(),
+            label = label?.let { { Text(it) } },
+            singleLine = true,
             modifier = Modifier
                 .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryEditable, enabled = true)
                 .fillMaxWidth(),
-            singleLine = true,
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onDismissRequest = { onExpandedChange(false) },
             modifier = Modifier
                 .heightIn(max = 300.dp)
         ) {
@@ -53,7 +80,7 @@ fun Dropdown(
                 DropdownMenuItem(
                     text = { Text(text = text) },
                     onClick = {
-                        expanded = false
+                        onExpandedChange(false)
                         onValueChanged(option)
                     },
                     leadingIcon = if (optionIcon != null) { { optionIcon(option) } }

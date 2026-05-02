@@ -1,5 +1,7 @@
 package de.malteans.pixlists.core.domain
 
+import de.malteans.pixlists.dashboard.domain.WidgetData
+import de.malteans.pixlists.dashboard.domain.WidgetType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.JsonElement
@@ -13,6 +15,7 @@ interface PixRepository {
 
     suspend fun renameList(listId: Long, newName: String)
 
+    fun getAllPixLists(): Flow<List<PixList>>
     fun getAllPixListsWithoutData(): Flow<List<PixList>>
 
     suspend fun addYearToList(listId: Long, year: Int)
@@ -57,4 +60,15 @@ interface PixRepository {
     suspend fun exportAllData(): JsonElement
 
     suspend fun importAllData(data: JsonElement): Result<Unit>
+
+    // Widget Operations ----------------------------------------------------------------------------------------------
+    fun getAllWidgets(): Flow<List<WidgetData>>
+
+    suspend fun createWidget(listId: Long, type: WidgetType, categoryIds: List<Long>): Long
+
+    suspend fun updateWidget(widgetId: Long, pixListId: Long, widgetType: WidgetType, categoryIds: List<Long>)
+
+    suspend fun updateWidgetOrder(widgetIds: List<Long>)
+
+    suspend fun deleteWidget(widgetId: Long)
 }
