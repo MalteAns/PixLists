@@ -24,4 +24,5 @@ data class PixDashboardWidgetEntity (
     val id: Long = 0L,
     val listId: Long,
     val type: WidgetType,
+    val orderIndex: Int = 0,
 )

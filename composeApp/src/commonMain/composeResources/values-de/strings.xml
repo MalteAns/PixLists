@@ -87,6 +87,10 @@
     <string name="statistics_heading">Statistiken für '%1$s'</string>
     <string name="edit_widget">Widget bearbeiten</string>
     <string name="no_data_available">Keine Daten verfügbar</string>
+    <string name="save">Speichern</string>
+    <string name="done">Fertig</string>
+    <string name="reorder_widgets">Widgets neu anordnen</string>
+    <string name="drag_to_reorder">Zum Umordnen ziehen</string>
 
     <!-- Stats Screen ______________________________________________________________________________________________ -->
     <string name="list_statistics">Listen Statistiken</string>

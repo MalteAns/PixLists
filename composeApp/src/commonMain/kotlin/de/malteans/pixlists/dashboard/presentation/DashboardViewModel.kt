@@ -58,6 +58,9 @@ class DashboardViewModel(
             is DashboardAction.DeleteWidget -> viewModelScope.launch(Dispatchers.IO) {
                 repository.deleteWidget(action.widgetId)
             }
+            is DashboardAction.UpdateWidgetOrder -> viewModelScope.launch(Dispatchers.IO) {
+                repository.updateWidgetOrder(action.widgetIds)
+            }
 
             is DashboardAction.AddTodayEntry -> viewModelScope.launch(Dispatchers.IO) {
                 val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date

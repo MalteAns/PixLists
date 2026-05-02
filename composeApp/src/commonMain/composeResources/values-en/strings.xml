@@ -87,6 +87,10 @@
     <string name="statistics_heading">Statistics for '%1$s'</string>
     <string name="edit_widget">Edit widget</string>
     <string name="no_data_available">No data available</string>
+    <string name="save">Save</string>
+    <string name="done">Done</string>
+    <string name="reorder_widgets">Reorder widgets</string>
+    <string name="drag_to_reorder">Drag to reorder</string>
 
     <!-- Stats Screen ______________________________________________________________________________________________ -->
     <string name="list_statistics">List Statistics</string>

@@ -13,6 +13,8 @@ sealed interface DashboardAction {
     ) : DashboardAction
     data class DeleteWidget(val widgetId: Long) : DashboardAction
 
+    data class UpdateWidgetOrder(val widgetIds: List<Long>) : DashboardAction
+
     data class AddTodayEntry(val pixListId: Long, val categoryId: Long) : DashboardAction
 
 }

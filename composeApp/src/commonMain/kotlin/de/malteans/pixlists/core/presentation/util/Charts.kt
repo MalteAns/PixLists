@@ -104,8 +104,8 @@ fun ColumnChart(
                     layerPadding = { CartesianLayerPadding(scalableStart = 8.dp, scalableEnd = 8.dp) },
                 ),
             modelProducer = modelProducer,
-            modifier = modifier,
             scrollState = rememberVicoScrollState(scrollEnabled = true),
+            modifier = modifier,
         )
     }
 }

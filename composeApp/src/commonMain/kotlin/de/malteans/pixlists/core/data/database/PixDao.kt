@@ -111,8 +111,14 @@ interface PixDao {
     suspend fun changeColor(colorId: Long, newRed: Float, newGreen: Float, newBlue: Float)
 
     // PixWidget Operations ----------------------------------------------------
-    @Query("SELECT * FROM pixdashboardwidgetentity")
+    @Query("SELECT * FROM pixdashboardwidgetentity ORDER BY orderIndex ASC")
     fun getAllWidgets(): Flow<List<PixDashboardWidgetEntity>>
+
+    @Query("SELECT * FROM pixdashboardwidgetentity WHERE id = :widgetId")
+    suspend fun getWidgetById(widgetId: Long): PixDashboardWidgetEntity?
+
+    @Query("UPDATE pixdashboardwidgetentity SET orderIndex = :newOrderIndex WHERE id = :widgetId")
+    suspend fun updateWidgetOrderIndex(widgetId: Long, newOrderIndex: Int)
 
     @Query("SELECT * FROM pixdashboardwidgetcategoryentity")
     fun getAllWidgetCategories(): Flow<List<PixDashboardWidgetCategoryEntity>>

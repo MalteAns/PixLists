@@ -8,4 +8,5 @@ data class WidgetData(
     val pixList: PixList,
     val type: WidgetType,
     val categories: List<PixCategory>,
+    val orderIndex: Int = 0,
 )

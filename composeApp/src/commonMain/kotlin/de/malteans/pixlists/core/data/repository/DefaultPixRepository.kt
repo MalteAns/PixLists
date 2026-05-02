@@ -369,6 +369,7 @@ class DefaultPixRepository(
                         categories = categoriesByWidgetId[widget.id]?.mapNotNull { categoryId ->
                             categoriesMap[categoryId]
                         } ?: emptyList(),
+                        orderIndex = widget.orderIndex,
                     )
                 }
             }
@@ -379,21 +380,29 @@ class DefaultPixRepository(
         return dao.createWidget(
             widget = PixDashboardWidgetEntity(
                 listId = listId,
-                type = type
+                type = type,
             ),
             categoryIds = categoryIds
         )
     }
 
     override suspend fun updateWidget(widgetId: Long, pixListId: Long, widgetType: WidgetType, categoryIds: List<Long>) {
+        val existingWidget = dao.getWidgetById(widgetId)
         return dao.updateWidget(
             widget = PixDashboardWidgetEntity(
                 id = widgetId,
                 listId = pixListId,
                 type = widgetType,
+                orderIndex = existingWidget?.orderIndex ?: 0
             ),
             categoryIds = categoryIds
         )
+    }
+
+    override suspend fun updateWidgetOrder(widgetIds: List<Long>) {
+        widgetIds.forEachIndexed { index, widgetId ->
+            dao.updateWidgetOrderIndex(widgetId, index)
+        }
     }
 
     override suspend fun deleteWidget(widgetId: Long) {

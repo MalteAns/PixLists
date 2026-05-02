@@ -68,5 +68,7 @@ interface PixRepository {
 
     suspend fun updateWidget(widgetId: Long, pixListId: Long, widgetType: WidgetType, categoryIds: List<Long>)
 
+    suspend fun updateWidgetOrder(widgetIds: List<Long>)
+
     suspend fun deleteWidget(widgetId: Long)
 }
