@@ -1,3 +1,6 @@
 [submodule "legal"]
 	path = legal
 	url = git@github.com:MalteAns/cmp-legal-screens.git
+[submodule "data-store"]
+	path = dataStore
+	url = git@github.com:MalteAns/cmp-data-store
