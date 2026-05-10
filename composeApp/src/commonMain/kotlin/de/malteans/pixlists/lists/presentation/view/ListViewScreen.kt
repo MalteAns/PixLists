@@ -74,6 +74,7 @@ fun ListViewScreen(
 //        viewModel.undoLastAction()
 //    }
 
+    // Pager variables ------------------------------------------------------------------------------------------------
     val pagerState = rememberPagerState(
         initialPage = state.selectedYearIndex,
         pageCount = { state.possibleYears.size }
@@ -89,6 +90,8 @@ fun ListViewScreen(
         }
     }
 
+    // Auto pager scrolls ---------------------------------------------------------------------------------------------
+    // Scroll on open
     LaunchedEffect(state.listStatus) {
         if (state.listStatus == ListStatus.OPENED) {
             val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
@@ -100,7 +103,7 @@ fun ListViewScreen(
             }
         }
     }
-
+    // Scroll on new year added
     var lastPossibleYears by remember { mutableStateOf(state.possibleYears) }
     LaunchedEffect(state.possibleYears.size) {
         if (lastPossibleYears.size == state.possibleYears.size - 1) {
@@ -113,6 +116,14 @@ fun ListViewScreen(
         lastPossibleYears = state.possibleYears
     }
 
+    // MaxWeights for Grid and EntryDialog ----------------------------------------------------------------------------
+    val maxWeights by remember(state.curPixList?.entries, state.curCategories) { derivedStateOf {
+        state.curCategories.associate { category ->
+            category.id to category.maxWeight
+        }
+    } }
+
+    // EntryDialog ----------------------------------------------------------------------------------------------------
     var showEntryDialog by remember { mutableStateOf(false) }
     var entryToEdit by remember { mutableStateOf<LocalDate?>(null) }
 
@@ -126,6 +137,7 @@ fun ListViewScreen(
 
         EntryDialog(
             categories = state.curCategories,
+            maxWeights = maxWeights,
             entries = state.curPixList?.entries ?: emptyMap(),
             onDismiss = onDismiss,
             onSubmit = { changes ->
@@ -148,20 +160,29 @@ fun ListViewScreen(
                 showCategoryDialog = false
                 categoryToEdit = null
             },
-            onSubmit = { name, color, isEdit ->
+            onSubmit = { name, color, enableWeight, minWeight, maxWeight, weightStep, isEdit ->
                 if (isEdit) {
                     onAction(
                         ListViewAction.UpdatePixCategory(
-                            categoryToEdit!!,
-                            name,
-                            color
+                            category = categoryToEdit!!.copy(
+                                name = name,
+                                color = color,
+                                enableWeight = enableWeight,
+                                minWeight = minWeight,
+                                maxWeight = maxWeight,
+                                weightStep = weightStep,
+                            )
                         )
                     )
                 } else {
                     onAction(
                         ListViewAction.CreatePixCategory(
-                            name!!,
-                            color!!
+                            name = name,
+                            color = color,
+                            enableWeight = enableWeight,
+                            minWeight = minWeight,
+                            maxWeight = maxWeight,
+                            weightStep = weightStep,
                         )
                     )
                 }
@@ -169,7 +190,7 @@ fun ListViewScreen(
                 categoryToEdit = null
             },
             onDelete = {
-                onAction(ListViewAction.DeletePixCategory(categoryToEdit!!))
+                onAction(ListViewAction.DeletePixCategory(categoryToEdit!!.id))
                 showCategoryDialog = false
                 categoryToEdit = null
             },
@@ -313,6 +334,7 @@ fun ListViewScreen(
                         state.possibleYears.getOrNull(page)?.let { year ->
                             PixGrid(
                                 entries = state.curPixList?.entries ?: emptyMap(),
+                                maxWeights = maxWeights,
                                 enabled = state.curCategories.isNotEmpty(),
                                 year = year,
                                 onEntryEdit = { date ->

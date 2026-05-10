@@ -1,12 +1,13 @@
 package de.malteans.pixlists.core.presentation.util
 
 import de.malteans.pixlists.core.domain.PixCategory
+import de.malteans.pixlists.core.domain.PixEntry
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
-fun Map<LocalDate, List<PixCategory>>.getAbsoluteMap(
+fun Map<LocalDate, List<PixEntry>>.getAbsoluteMap(
     categories: List<PixCategory>, dateRange: Pair<LocalDate?, LocalDate?>? = null
 ): Map<PixCategory, Int> {
     val absoluteCountMap = categories.associateWith { 0 }.toMutableMap()
@@ -20,7 +21,7 @@ fun Map<LocalDate, List<PixCategory>>.getAbsoluteMap(
         }
 
         for (category in categories) {
-            if (entryCategories.contains(category)) {
+            if (entryCategories.any { it.category == category }) {
                 absoluteCountMap[category] = (absoluteCountMap[category] ?: 0) + 1
             }
         }
@@ -35,7 +36,7 @@ fun Map<PixCategory, Int>.toRelativeMap(): Map<PixCategory, Double> {
     }
 }
 
-fun Map<LocalDate, List<PixCategory>>.getLineChartData(
+fun Map<LocalDate, List<PixEntry>>.getLineChartData(
     categories: List<PixCategory>
 ): Map<PixCategory, List<Pair<LocalDate, Int>>> {
     if (categories.isEmpty() || this.isEmpty()) return emptyMap()
@@ -51,7 +52,7 @@ fun Map<LocalDate, List<PixCategory>>.getLineChartData(
         result[category] = currentList
 
         sortedEntries.forEach { (date, entryCategories) ->
-            if (entryCategories.contains(category)) {
+            if (entryCategories.any { it.category == category }) {
                 val nextCount = (currentList.lastOrNull()?.second ?: 0) + 1
                 currentList.add(date to nextCount)
             }

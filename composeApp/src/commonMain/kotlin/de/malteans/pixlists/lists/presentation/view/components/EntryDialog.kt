@@ -20,7 +20,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import de.malteans.pixlists.core.domain.PixCategory
+import de.malteans.pixlists.core.domain.PixEntry
 import de.malteans.pixlists.core.presentation.components.CustomDialog
+import de.malteans.pixlists.core.presentation.components.IconIconButton
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.*
@@ -31,17 +33,18 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun EntryDialog(
     categories: List<PixCategory>,
-    entries: Map<LocalDate, List<PixCategory>>,
+    maxWeights: Map<Long, Int>, // CategoryId to maxWeight
+    entries: Map<LocalDate, List<PixEntry>>,
     onDismiss: () -> Unit,
-    onSubmit: (changes: Map<LocalDate, List<PixCategory>>) -> Unit,
+    onSubmit: (changes: Map<LocalDate, List<PixEntry>>) -> Unit,
     startDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
 ) {
     val focusManager = LocalFocusManager.current
 
-    var changesMap by remember { mutableStateOf(emptyMap<LocalDate, List<PixCategory>>()) }
+    var changesMap by remember { mutableStateOf(emptyMap<LocalDate, List<PixEntry>>()) }
 
     var selectedDate by remember { mutableStateOf(startDate) }
-    var selectedCategories: List<PixCategory?> by remember(changesMap, selectedDate) {
+    var selectedEntries: List<PixEntry?> by remember(changesMap, selectedDate) {
         mutableStateOf((changesMap[selectedDate] ?: entries[selectedDate] ?: emptyList()) + null)
     }
 
@@ -63,12 +66,11 @@ fun EntryDialog(
             onDismissRequest = { showSubmitAllDialog = false },
             title = { Text(stringResource(Res.string.submit_changes_title)) },
             leftIcons = {
-                IconButton(onClick = { showSubmitAllDialog = false }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                    )
-                }
+                IconIconButton(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    onClick = { showSubmitAllDialog = false },
+                )
             }
         ) {
             Text(stringResource(Res.string.submit_changes_desc, selectedDate.asString()))
@@ -78,8 +80,8 @@ fun EntryDialog(
                     .fillMaxWidth()
             ) {
                 Button({
-                    onSubmit(changesMap[selectedDate]?.let { categories ->
-                        mapOf(selectedDate to categories)
+                    onSubmit(changesMap[selectedDate]?.let { dateEntries ->
+                        mapOf(selectedDate to dateEntries)
                     } ?: emptyMap())
                     showSubmitAllDialog = false
                 }) {
@@ -117,7 +119,10 @@ fun EntryDialog(
             }
         },
         rightIcons = {
-            IconButton(
+            IconIconButton(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Submit",
+                iconColor = MaterialTheme.colorScheme.primary,
                 onClick = {
                     val filteredChanges = changesMap.filter {
                         entries[it.key] != it.value
@@ -128,14 +133,8 @@ fun EntryDialog(
                     else {
                         showSubmitAllDialog = true
                     }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Submit",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+                },
+            )
         },
     ) {
         Row (
@@ -143,17 +142,14 @@ fun EntryDialog(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            IconButton(
+            IconIconButton(
+                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                contentDescription = "Previous Date",
                 onClick = {
                     selectedDate = selectedDate.minus(1, DateTimeUnit.DAY)
                     focusManager.clearFocus()
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    contentDescription = "Previous Date",
-                )
-            }
+            )
             Text(
                 text = selectedDate.asString(),
                 modifier = Modifier
@@ -162,45 +158,53 @@ fun EntryDialog(
                         focusManager.clearFocus()
                     }
             )
-            IconButton(
+            IconIconButton(
+                imageVector = Icons.AutoMirrored.Default.ArrowForward,
+                contentDescription = "Next Date",
                 onClick = {
                     selectedDate = selectedDate.plus(1, DateTimeUnit.DAY)
                     focusManager.clearFocus()
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.ArrowForward,
-                    contentDescription = "Next Date",
-                )
-            }
+            )
         }
         LazyColumn {
             items(
-                count = selectedCategories.size,
+                count = selectedEntries.size,
             ) { index ->
-                CategoryListItem(
-                    selectedCategory = selectedCategories.getOrNull(index),
+                val selectedEntry = selectedEntries.getOrNull(index)
+
+                EntryDialogItem(
+                    index = index + 1,
+                    initialExpanded = index == 0 && selectedEntry == null,
+                    selectedCategory = selectedEntry?.category,
                     options = categories
-                        .filter { category -> category.id !in selectedCategories.map { it?.id } }
+                        .filter { category -> category.id !in selectedEntries.map { it?.category?.id } }
                         .associateWith { it.name },
                     changeCategory = { newCategory ->
-                        changesMap = changesMap.toMutableMap().also {
-                            it[selectedDate] = selectedCategories
-                                .toMutableList()
-                                .also { categories -> categories[index] = newCategory }
-                                .filterNotNull()
+                        changesMap = changesMap.toMutableMap().also { map ->
+                            val currentEntries = selectedEntries.toMutableList()
+                            val weight = currentEntries.getOrNull(index)?.weight
+                            currentEntries[index] = PixEntry(category = newCategory, weight = weight)
+                            map[selectedDate] = currentEntries.filterNotNull()
                         }
                     },
-                    removeCategory = {
-                        changesMap = changesMap.toMutableMap().also {
-                            it[selectedDate] = selectedCategories
-                                .toMutableList()
-                                .also { categories -> categories.removeAt(index) }
-                                .filterNotNull()
+                    weight = selectedEntry?.weight ?: selectedEntry?.category?.maxWeight,
+                    maxWeights = maxWeights,
+                    onWeightChange = { newWeight ->
+                        if (selectedEntry == null) return@EntryDialogItem // User has to select category first
+                        changesMap = changesMap.toMutableMap().also { map ->
+                            val currentEntries = selectedEntries.toMutableList()
+                            currentEntries[index] = selectedEntry.copy(weight = newWeight)
+                            map[selectedDate] = currentEntries.filterNotNull()
                         }
                     },
-                    index = index + 1,
-                    initialExpanded = index == selectedCategories.lastIndex
+                    removeEntry = {
+                        changesMap = changesMap.toMutableMap().also { map ->
+                            val currentEntries = selectedEntries.toMutableList()
+                            currentEntries.removeAt(index)
+                            map[selectedDate] = currentEntries.filterNotNull()
+                        }
+                    },
                 )
             }
         }

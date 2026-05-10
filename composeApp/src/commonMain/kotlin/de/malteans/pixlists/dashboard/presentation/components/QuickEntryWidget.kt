@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import de.malteans.pixlists.core.domain.PixCategory
+import de.malteans.pixlists.core.domain.PixEntry
 import de.malteans.pixlists.core.presentation.components.Dropdown
 import de.malteans.pixlists.lists.presentation.view.components.PixCellCanvas
 import org.jetbrains.compose.resources.stringResource
@@ -34,7 +35,7 @@ fun QuickEntryWidget(
             optionIcon = {
                 it?.let { category ->
                     PixCellCanvas(
-                        categories = listOf(category),
+                        entries = listOf(PixEntry(category)),
                         animation = false,
                     )
                 }

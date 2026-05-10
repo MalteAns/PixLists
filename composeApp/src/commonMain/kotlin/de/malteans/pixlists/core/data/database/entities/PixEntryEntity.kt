@@ -32,4 +32,5 @@ data class PixEntryEntity (
     val listId: Long,
     val categoryId: Long,
     val date: LocalDate,
+    val weight: Int? = null,
 )

@@ -6,10 +6,7 @@ import de.malteans.pixlists.core.data.mappers.toDomain
 import de.malteans.pixlists.core.data.mappers.toEntity
 import de.malteans.pixlists.core.data.mappers.toJsonDto
 import de.malteans.pixlists.core.data.serialization.JsonFullDataDto
-import de.malteans.pixlists.core.domain.PixCategory
-import de.malteans.pixlists.core.domain.PixColor
-import de.malteans.pixlists.core.domain.PixList
-import de.malteans.pixlists.core.domain.PixRepository
+import de.malteans.pixlists.core.domain.*
 import de.malteans.pixlists.dashboard.domain.WidgetData
 import de.malteans.pixlists.dashboard.domain.WidgetType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -110,7 +107,11 @@ class DefaultPixRepository(
                         listId = base.listId,
                         color = color,
                         name = r.categoryName.orEmpty(),
-                        orderIndex = r.categoryOrderIndex ?: Int.MAX_VALUE
+                        enableWeight = r.categoryEnableWeight ?: PixCategory.DEFAULT_ENABLE_WEIGHT,
+                        minWeight = r.categoryMinWeight ?: PixCategory.DEFAULT_MIN_WEIGHT,
+                        maxWeight = r.categoryMaxWeight ?: PixCategory.DEFAULT_MAX_WEIGHT,
+                        weightStep = r.categoryWeightStep ?: PixCategory.DEFAULT_WEIGHT_STEP,
+                        orderIndex = r.categoryOrderIndex ?: PixCategory.DEFAULT_ORDER_INDEX,
                     )
                 }
             }
@@ -118,8 +119,8 @@ class DefaultPixRepository(
             // Sorted categories (by orderIndex)
             val sortedCategories = categoriesById.values.sortedBy { it.orderIndex }
 
-            // Entries: Map<LocalDate, List<PixCategory>>
-            val entriesMap: Map<LocalDate, List<PixCategory>> =
+            // Entries: Map<LocalDate, List<PixEntry>>
+            val entriesMap: Map<LocalDate, List<PixEntry>> =
                 rows.asSequence()
                     .filter { it.entryDate != null && it.categoryId != null }
                     .groupBy { it.entryDate!! }
@@ -127,7 +128,11 @@ class DefaultPixRepository(
                         dayRows
                             .distinctBy { it.categoryId } // guard against accidental duplicates
                             .sortedBy { it.categoryOrderIndex ?: Int.MAX_VALUE }
-                            .mapNotNull { r -> r.categoryId?.let(categoriesById::get) }
+                            .mapNotNull { r ->
+                                r.categoryId?.let(categoriesById::get)?.let { category ->
+                                    PixEntry(category = category, weight = r.entryWeight)
+                                }
+                            }
                     }
 
             PixList(
@@ -141,27 +146,30 @@ class DefaultPixRepository(
     }
 
     // Category Operations ----------------------------------------------
-    override suspend fun createCategory(listId: Long, colorId: Long, name: String): Long {
-        // Determine orderIndex based on current number of categories
+    override suspend fun createCategory(
+        listId: Long, colorId: Long, name: String,
+        enableWeight: Boolean, minWeight: Int,
+        maxWeight: Int, weightStep: Int
+    ): Long {
         val orderIndex = dao.getCategoryCountForList(listId)
         return dao.upsertCategory(PixCategoryEntity(
             listId = listId,
             colorId = colorId,
             name = name,
-            orderIndex = orderIndex
+            orderIndex = orderIndex,
+            enableWeight = enableWeight,
+            minWeight = minWeight,
+            maxWeight = maxWeight,
+            weightStep = weightStep
         ))
+    }
+
+    override suspend fun updateCategory(category: PixCategory) {
+        dao.upsertCategory(category.toEntity())
     }
 
     override suspend fun deleteCategoryById(categoryId: Long) {
         dao.deleteCategoryById(categoryId)
-    }
-
-    override suspend fun renameCategory(categoryId: Long, newName: String) {
-        dao.renameCategory(categoryId, newName)
-    }
-
-    override suspend fun changeCategoryColor(categoryId: Long, newColorId: Long) {
-        dao.changeCategoryColor(categoryId, newColorId)
     }
 
     override suspend fun changeCategoriesOrder(listId: Long, newOrderByIds: List<Long>) {
@@ -218,7 +226,7 @@ class DefaultPixRepository(
     }
 
     // Entry Operations --------------------------------------------------
-    override suspend fun setEntry(listId: Long, categoryIds: List<Long>, date: LocalDate): List<Long> {
+    override suspend fun setEntry(listId: Long, entries: List<PixEntry>, date: LocalDate): List<Long> {
         val listEntity = dao.getListWithoutUpdate(listId)
             ?: throw IllegalArgumentException("List with id $listId does not exist")
         val list = listEntity.toDomain()
@@ -229,16 +237,27 @@ class DefaultPixRepository(
         val currentEntries
             = dao.getEntriesWithoutUpdate(listId, date).associateBy { it.categoryId }.toMutableMap()
         val entryIds = mutableListOf<Long>()
-        for (id in categoryIds) {
+        for (entry in entries) {
+            val id = entry.category.id
             if (id in currentEntries.keys) {
-                currentEntries.remove(id)
-                entryIds.add(id)
+                val existingId = currentEntries.remove(id)?.id ?: 0L
+                // UPSERT always just to update weight
+                entryIds.add(dao.upsertEntry(
+                    PixEntryEntity(
+                        listId = listId,
+                        date = date,
+                        categoryId = id,
+                        weight = entry.weight,
+                        id = existingId
+                    )
+                ))
             } else {
                 entryIds.add(dao.upsertEntry(
                     PixEntryEntity(
                         listId = listId,
                         date = date,
-                        categoryId = id
+                        categoryId = id,
+                        weight = entry.weight
                     )
                 ))
             }
@@ -271,8 +290,11 @@ class DefaultPixRepository(
                     .filter { entryEntity -> entryEntity.listId == listEntity.id }
                     .groupBy(
                         keySelector = { it.date },
-                        valueTransform = { allCategories.find { cat -> cat.id == it.categoryId }?.toDomain(allColors[it.categoryId]?.toDomain())
-                            ?: throw IllegalStateException("Category ${it.categoryId} not found for entry ${it.id} on ${it.date}") }
+                        valueTransform = {
+                            val category = allCategories.find { cat -> cat.id == it.categoryId }?.toDomain(allColors[it.categoryId]?.toDomain())
+                                ?: throw IllegalStateException("Category ${it.categoryId} not found for entry ${it.id} on ${it.date}")
+                            PixEntry(category = category, weight = it.weight)
+                        }
                     )
             )
         }
@@ -322,12 +344,14 @@ class DefaultPixRepository(
             }
             listDto.entries.forEach { entryDto ->
                 val date = LocalDate.fromEpochDays(entryDto.epochDays)
-                entryDto.categoryNames.forEach { categoryName ->
+                entryDto.categoryNames.forEachIndexed { index, categoryName ->
+                    val weight = entryDto.categoryWeights.getOrNull(index)
                     dao.upsertEntry(PixEntryEntity(
                         listId = listId,
                         date = date,
                         categoryId = categoriesMap[categoryName]
                             ?: return Result.failure(IllegalStateException("Category '$categoryName' not found for entry on $date in list '${listDto.name}'")),
+                        weight = weight
                     ))
                 }
             }

@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import de.malteans.pixlists.core.domain.Months
-import de.malteans.pixlists.core.domain.PixCategory
+import de.malteans.pixlists.core.domain.PixEntry
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -18,7 +18,8 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 @Composable
 fun PixGrid(
-    entries: Map<LocalDate, List<PixCategory>>,
+    entries: Map<LocalDate, List<PixEntry>>,
+    maxWeights: Map<Long, Int>,
     year: Int,
     enabled: Boolean,
     onEntryEdit: (LocalDate) -> Unit,
@@ -77,10 +78,11 @@ fun PixGrid(
                                         )
                                     } else {
                                         val date = LocalDate(year, monthNumber, day)
-                                        val pixCategories = entries.getOrElse(date) { emptyList() }
+                                        val dayEntries = entries.getOrElse(date) { emptyList() }
 
                                         PixCellCanvas(
-                                            categories = pixCategories,
+                                            entries = dayEntries,
+                                            maxWeights = maxWeights,
                                             isToday = date == today,
                                             enabled = enabled,
                                             onClick = { onEntryEdit(date) },

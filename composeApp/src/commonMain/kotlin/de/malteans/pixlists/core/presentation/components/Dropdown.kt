@@ -57,8 +57,7 @@ fun <T> Dropdown(
             value = selectedOption.second,
             onValueChange = { },
             colors = textFieldColors,
-            leadingIcon = if (optionIcon != null) { { optionIcon(selectedOption.first) } }
-                else null,
+            leadingIcon = optionIcon?.let { { optionIcon(selectedOption.first) } },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },

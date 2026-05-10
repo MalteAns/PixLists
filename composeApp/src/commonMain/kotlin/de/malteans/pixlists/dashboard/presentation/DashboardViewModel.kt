@@ -3,6 +3,7 @@ package de.malteans.pixlists.dashboard.presentation
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.malteans.pixlists.core.domain.PixEntry
 import de.malteans.pixlists.core.domain.PixRepository
 import de.malteans.pixlists.core.presentation.components.SnackbarManager
 import kotlinx.coroutines.Dispatchers
@@ -66,11 +67,11 @@ class DashboardViewModel(
                 val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
                 val currentEntry = state.value.pixLists
                     .find { it.id == action.pixListId }
-                    ?.entries[today]
+                    ?.entries?.get(today)
                     ?: emptyList()
                 repository.setEntry(
                     listId = action.pixListId,
-                    categoryIds = currentEntry.map { it.id } + action.categoryId,
+                    entries = currentEntry + PixEntry(category = state.value.widgets.flatMap { it.categories }.first { it.id == action.categoryId }),
                     date = today,
                 )
                 SnackbarManager.showSnackbar(

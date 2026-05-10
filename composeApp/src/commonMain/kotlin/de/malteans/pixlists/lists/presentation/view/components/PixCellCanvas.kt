@@ -23,11 +23,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import de.malteans.pixlists.core.domain.PixCategory
+import de.malteans.pixlists.core.domain.PixEntry
 
 @Composable
 fun PixCellCanvas(
-    categories: List<PixCategory>,
+    entries: List<PixEntry>,
+    maxWeights: Map<Long, Int> = emptyMap(),
     isToday: Boolean = false,
     enabled: Boolean = false,
     animation: Boolean = true,
@@ -48,7 +49,7 @@ fun PixCellCanvas(
     val interactionSource = remember { MutableInteractionSource() }
 
     val animatedScale = Animatable(1f)
-    var categoriesState by remember { mutableStateOf(categories) }
+    var entriesState by remember { mutableStateOf(entries) }
 
     LaunchedEffect(Unit) {
         if (!animation) return@LaunchedEffect
@@ -58,16 +59,16 @@ fun PixCellCanvas(
         )
     }
 
-    LaunchedEffect(categories) {
+    LaunchedEffect(entries) {
         if (!animation) {
-            categoriesState = categories
+            entriesState = entries
             return@LaunchedEffect
         }
         animatedScale.animateTo(
             targetValue = 0f,
             animationSpec = tween(100)
         )
-        categoriesState = categories
+        entriesState = entries
         animatedScale.animateTo(
             targetValue = 1f,
             animationSpec = tween(200, easing = EaseOutBack),
@@ -112,7 +113,18 @@ fun PixCellCanvas(
         val contentW = (contentRight - contentLeft).coerceAtLeast(0f)
         val contentH = (contentBottom - contentTop).coerceAtLeast(0f)
 
-        fun colorOf(i: Int): Color = categoriesState.getOrNull(i)?.color?.toColor() ?: errorColor
+        fun colorOf(i: Int): Color {
+            val entry = entriesState.getOrNull(i) ?: return errorColor
+            val baseColor = entry.category.color?.toColor() ?: errorColor
+            val maxWeight = maxWeights[entry.category.id]
+            if (entry.category.enableWeight && entry.weight != null
+                    && maxWeight != null && maxWeight > 0
+            ) {
+                val alpha = (entry.weight.toFloat() / maxWeight.toFloat()).coerceIn(0f, 1f)
+                return baseColor.copy(alpha = alpha)
+            }
+            return baseColor
+        }
 
         val contentRoundRect = RoundRect(
             left = contentLeft, top = contentTop,
@@ -132,7 +144,7 @@ fun PixCellCanvas(
             )
         }
 
-        when (categoriesState.size.coerceAtMost(4)) {
+        when (entriesState.size.coerceAtMost(4)) {
             0 -> {
                 // EMPTY → outline on CONTENT rect so it matches the filled size
                 drawRoundRect(
