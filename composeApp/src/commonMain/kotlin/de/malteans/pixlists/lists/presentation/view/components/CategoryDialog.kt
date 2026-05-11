@@ -40,8 +40,8 @@ fun CategoryDialog(
         name: String,
         color: PixColor,
         enableWeight: Boolean,
-        maxWeight: Int,
         minWeight: Int,
+        maxWeight: Int,
         weightStep: Int,
         isEdit: Boolean,
     ) -> Unit, // name, color, enableWeight, minWeight, maxWeight, weightStep, isEdit

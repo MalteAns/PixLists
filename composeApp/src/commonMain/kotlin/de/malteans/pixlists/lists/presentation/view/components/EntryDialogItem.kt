@@ -102,7 +102,7 @@ fun EntryDialogItem(
                         value = (weight ?: selectedCategory.maxWeight).toFloat(),
                         onValueChange = { onWeightChange(it.roundToInt()) },
                         valueRange = selectedCategory.minWeight.toFloat()..selectedCategory.maxWeight.toFloat(),
-                        steps = ((selectedCategory.maxWeight - selectedCategory.minWeight) / selectedCategory.weightStep) - 1,
+                        steps = (((selectedCategory.maxWeight - selectedCategory.minWeight) / selectedCategory.weightStep) - 1).coerceAtLeast(0),
                         colors = SliderDefaults.colors(
                             thumbColor = categoryColor,
                             activeTrackColor = categoryColor,

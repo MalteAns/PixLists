@@ -16,6 +16,6 @@ data class PixCategory(
         const val DEFAULT_ENABLE_WEIGHT = false
         const val DEFAULT_MIN_WEIGHT = 0
         const val DEFAULT_MAX_WEIGHT = 100
-        const val DEFAULT_WEIGHT_STEP = 1
+        const val DEFAULT_WEIGHT_STEP = 10
     }
 }
