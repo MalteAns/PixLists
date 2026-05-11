@@ -6,8 +6,8 @@ android-minSdk = "30"
 android-targetSdk = "36"
 
 applicationId = "de.malteans.pixlists"
-projectVersionCode = "8"
-projectVersionName = "1.0.1"
+projectVersionCode = "9"
+projectVersionName = "1.1.0"
 #projectVersionNameSuffix = ""
 
 kotlin = "2.3.21"
