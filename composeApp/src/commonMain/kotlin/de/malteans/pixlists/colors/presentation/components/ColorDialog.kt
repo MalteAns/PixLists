@@ -38,6 +38,8 @@ import de.malteans.pixlists.core.presentation.theme.containerColor
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun ColorDialog(
@@ -54,7 +56,7 @@ fun ColorDialog(
 
     LaunchedEffect(Unit) {
         if (!isEdit) {
-            delay(150)
+            delay(150.milliseconds)
             focusRequester.requestFocus()
             keyboardController?.show()
         }
@@ -133,7 +135,7 @@ fun ColorDialog(
             var deleteClicked by remember { mutableStateOf(false) }
             LaunchedEffect(deleteClicked) {
                 if (deleteClicked) {
-                    delay(2000)
+                    delay(2.seconds)
                     deleteClicked = false
                 }
             }

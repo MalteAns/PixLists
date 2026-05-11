@@ -30,6 +30,10 @@ data class PixCategoryEntity(
     val id: Long = 0L,
     val listId: Long,
     val colorId: Long?,
-    val name: String = "",
+    val name: String,
     val orderIndex: Int,
+    val enableWeight: Boolean,
+    val minWeight: Int,
+    val maxWeight: Int,
+    val weightStep: Int,
 )

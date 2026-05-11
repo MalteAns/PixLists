@@ -2,6 +2,7 @@ package de.malteans.pixlists.lists.presentation.view
 
 import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
+import de.malteans.pixlists.core.domain.PixEntry
 import de.malteans.pixlists.lists.presentation.view.components.ListStatus
 import kotlinx.datetime.LocalDate
 
@@ -18,18 +19,20 @@ sealed interface ListViewAction {
 
     data class CreatePixCategory(
         val name: String,
-        val color: PixColor
+        val color: PixColor,
+        val enableWeight: Boolean,
+        val minWeight: Int,
+        val maxWeight: Int,
+        val weightStep: Int,
     ) : ListViewAction
     data class UpdatePixCategory(
         val category: PixCategory,
-        val newName: String?,
-        val newColor: PixColor?
     ) : ListViewAction
-    data class DeletePixCategory(val category: PixCategory) : ListViewAction
-    data class UpdatePixCategoryOrder(val categories: List<Long>) : ListViewAction
+    data class DeletePixCategory(val categoryId: Long) : ListViewAction
+    data class UpdatePixCategoryOrder(val newOrder: List<Long>) : ListViewAction
 
     data class SetPixEntry(
         val date: LocalDate,
-        val category: List<PixCategory>
+        val entries: List<PixEntry>
     ) : ListViewAction
 }

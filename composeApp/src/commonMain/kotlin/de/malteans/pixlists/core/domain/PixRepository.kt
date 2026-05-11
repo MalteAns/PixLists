@@ -24,13 +24,15 @@ interface PixRepository {
     fun getCurrentPixList(listId: Long): Flow<PixList?>
 
     // Category Operations ----------------------------------------------
-    suspend fun createCategory(listId: Long, colorId: Long, name: String): Long
+    suspend fun createCategory(
+        listId: Long, colorId: Long, name: String,
+        enableWeight: Boolean = PixCategory.DEFAULT_ENABLE_WEIGHT, minWeight: Int = PixCategory.DEFAULT_MIN_WEIGHT,
+        maxWeight: Int = PixCategory.DEFAULT_MAX_WEIGHT, weightStep: Int = PixCategory.DEFAULT_WEIGHT_STEP,
+    ): Long
+
+    suspend fun updateCategory(category: PixCategory)
 
     suspend fun deleteCategoryById(categoryId: Long)
-
-    suspend fun renameCategory(categoryId: Long, newName: String)
-
-    suspend fun changeCategoryColor(categoryId: Long, newColorId: Long)
 
     suspend fun changeCategoriesOrder(listId: Long, newOrderByIds: List<Long>)
 
@@ -52,7 +54,7 @@ interface PixRepository {
     fun getAllColorsWithUses(): Flow<Map<PixColor, Int>>
 
     // Entry Operations --------------------------------------------------
-    suspend fun setEntry(listId: Long, categoryIds: List<Long>, date: LocalDate): List<Long>
+    suspend fun setEntry(listId: Long, entries: List<PixEntry>, date: LocalDate): List<Long>
 
     suspend fun deleteEntry(listId: Long, date: LocalDate)
 

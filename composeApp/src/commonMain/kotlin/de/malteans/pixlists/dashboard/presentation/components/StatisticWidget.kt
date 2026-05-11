@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastRoundToInt
 import de.malteans.pixlists.core.domain.PixCategory
+import de.malteans.pixlists.core.domain.PixEntry
 import de.malteans.pixlists.core.domain.PixList
 import de.malteans.pixlists.core.presentation.components.FadeForScrollList
 import de.malteans.pixlists.core.presentation.util.*
@@ -69,7 +70,7 @@ private fun TextStatisticWidget(
                     modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     PixCellCanvas(
-                        categories = listOf(category),
+                        entries = listOf(PixEntry(category)),
                         animation = false,
                     )
                     Text(

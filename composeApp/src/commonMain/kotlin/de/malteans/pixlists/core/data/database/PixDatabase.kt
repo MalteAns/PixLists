@@ -9,7 +9,7 @@ import de.malteans.pixlists.core.data.database.entities.*
 @Database(
     entities = [PixListEntity::class, PixEntryEntity::class, PixCategoryEntity::class, PixColorEntity::class,
         PixDashboardWidgetEntity::class, PixDashboardWidgetCategoryEntity::class],
-    version = 5,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(

@@ -175,6 +175,10 @@ interface PixDao {
 
             c.id                        AS categoryId,
             c.name                      AS categoryName,
+            c.enableWeight              AS categoryEnableWeight,
+            c.minWeight                 AS categoryMinWeight,
+            c.maxWeight                 AS categoryMaxWeight,
+            c.weightStep                AS categoryWeightStep,
             c.orderIndex                AS categoryOrderIndex,
 
             col.id                      AS colorId,
@@ -184,7 +188,8 @@ interface PixDao {
             col.blue                    AS colorBlue,
 
             e.id                        AS entryId,
-            e.date                      AS entryDate
+            e.date                      AS entryDate,
+            e.weight                    AS entryWeight
         FROM pixlistentity AS l
         LEFT JOIN pixcategoryentity AS c
                ON c.listId = l.id

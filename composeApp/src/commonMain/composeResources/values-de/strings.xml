@@ -63,6 +63,14 @@
 
     <string name="rename_list">Liste umbenennen</string>
 
+    <!-- Weight settings ___________________________________________________________________________________________ -->
+    <string name="enable_weight">Gewichtung aktivieren</string>
+    <string name="min">Min</string>
+    <string name="max">Max</string>
+    <string name="step">Schritt</string>
+    <string name="weight_label">Gewicht: %1$d</string>
+    <string name="delete_category">Kategorie löschen</string>
+
     <!-- Dashboard Screen __________________________________________________________________________________________ -->
     <string name="dashboard_no_widgets_title">Dein persönliches Dashboard</string>
     <string name="dashboard_no_widgets_desc">Füge über den Button oben rechts Widgets hinzu, um ein persönliches Dashboard für den perfekten Überblick zu erstellen.</string>

@@ -63,6 +63,14 @@
 
     <string name="rename_list">Rename list</string>
 
+    <!-- Weight settings ___________________________________________________________________________________________ -->
+    <string name="enable_weight">Enable Weights</string>
+    <string name="min">Min</string>
+    <string name="max">Max</string>
+    <string name="step">Step</string>
+    <string name="weight_label">Weight: %1$d</string>
+    <string name="delete_category">Delete Category</string>
+
     <!-- Dashboard Screen __________________________________________________________________________________________ -->
     <string name="dashboard_no_widgets_title">Your personal dashboard</string>
     <string name="dashboard_no_widgets_desc">Add a widget via the button in the top right corner, to customize your personal dashboard for the perfect overview.</string>

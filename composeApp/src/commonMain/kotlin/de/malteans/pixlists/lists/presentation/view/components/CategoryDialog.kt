@@ -1,5 +1,6 @@
 package de.malteans.pixlists.lists.presentation.view.components
 
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -23,16 +24,27 @@ import de.malteans.pixlists.core.domain.PixCategory
 import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.presentation.components.CustomDialog
 import de.malteans.pixlists.core.presentation.components.Dropdown
+import de.malteans.pixlists.core.presentation.components.IntTextField
 import de.malteans.pixlists.core.presentation.components.customIcons.FilledPixIcon
 import de.malteans.pixlists.core.presentation.util.AnimatedDoubleIconButton
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import pixlists.composeapp.generated.resources.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun CategoryDialog(
     onDismiss: () -> Unit,
-    onSubmit: (String?, PixColor?, Boolean) -> Unit,
+    onSubmit: (
+        name: String,
+        color: PixColor,
+        enableWeight: Boolean,
+        minWeight: Int,
+        maxWeight: Int,
+        weightStep: Int,
+        isEdit: Boolean,
+    ) -> Unit, // name, color, enableWeight, minWeight, maxWeight, weightStep, isEdit
     onDelete: () -> Unit,
     colors: List<PixColor> = emptyList(),
     invalidNames: List<String> = emptyList(),
@@ -43,7 +55,7 @@ fun CategoryDialog(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
-        delay(150)
+        delay(150.milliseconds)
         focusRequester.requestFocus()
         keyboardController?.show()
     }
@@ -57,6 +69,11 @@ fun CategoryDialog(
         )
     }
     var color by remember { mutableStateOf(categoryToEdit?.color ?: colors.firstOrNull()) }
+
+    var enableWeight by remember { mutableStateOf(categoryToEdit?.enableWeight ?: PixCategory.DEFAULT_ENABLE_WEIGHT) }
+    var minWeight by remember { mutableStateOf(categoryToEdit?.minWeight ?: PixCategory.DEFAULT_MIN_WEIGHT) }
+    var maxWeight by remember { mutableStateOf(categoryToEdit?.maxWeight ?: PixCategory.DEFAULT_MAX_WEIGHT) }
+    var weightStep by remember { mutableStateOf(categoryToEdit?.weightStep ?: PixCategory.DEFAULT_WEIGHT_STEP) }
 
     CustomDialog(
         onDismissRequest = onDismiss,
@@ -82,18 +99,25 @@ fun CategoryDialog(
         },
         rightIcons = {
             val showDelete by remember { derivedStateOf {
-                nameField.text.trim() == (categoryToEdit?.name ?: "") && color == categoryToEdit?.color
+                nameField.text.trim() == (categoryToEdit?.name ?: "") &&
+                color == categoryToEdit?.color &&
+                enableWeight == (categoryToEdit?.enableWeight) &&
+                minWeight == (categoryToEdit.minWeight) &&
+                maxWeight == (categoryToEdit.maxWeight) &&
+                weightStep == (categoryToEdit.weightStep)
             } }
             val validToSubmit by remember { derivedStateOf {
-                nameField.text.isNotBlank() && color != null &&
-                    (!invalidNames.contains(nameField.text.trim())
-                        xor
-                    (nameField.text.trim() == (categoryToEdit?.name ?: "")))
+                nameField.text.isNotBlank() &&
+                color != null &&
+                (!invalidNames.contains(nameField.text.trim())
+                    xor (nameField.text.trim() == (categoryToEdit?.name ?: ""))) &&
+                (minWeight < maxWeight) &&
+                (weightStep > 0)
             } }
             var deleteClicked by remember { mutableStateOf(false) }
             LaunchedEffect(deleteClicked) {
                 if (deleteClicked) {
-                    delay(2000)
+                    delay(2.seconds)
                     deleteClicked = false
                 }
             }
@@ -105,8 +129,12 @@ fun CategoryDialog(
                         if (deleteClicked) onDelete()
                         deleteClicked = !deleteClicked
                     } else onSubmit(
-                        if (nameField.text.trim() == (categoryToEdit?.name ?: "")) null else nameField.text,
-                        if (color == categoryToEdit?.color) null else color,
+                        nameField.text,
+                        color!!,
+                        enableWeight,
+                        minWeight,
+                        maxWeight,
+                        weightStep,
                         isEdit
                     )
                 },
@@ -177,12 +205,11 @@ fun CategoryDialog(
                         .fillMaxWidth(),
                     options = colors.sortedBy { it.name }.associateBy({ it }, { it.name }),
                     label = stringResource(Res.string.color),
-                    onValueChanged = { color = it as PixColor },
+                    onValueChanged = { color = it },
                     selectedOption = Pair(color, color?.name
                         ?: stringResource(Res.string.no_color)),
                     optionIcon = { color ->
                         if (color != null) {
-                            color as PixColor
                             Icon(
                                 imageVector = FilledPixIcon,
                                 contentDescription = "Color",
@@ -192,23 +219,55 @@ fun CategoryDialog(
                     },
                 )
             }
-//            Column ( TODO: Implement custom color
-//                modifier = Modifier
-//                    .fillMaxWidth(),
-//                horizontalAlignment = Alignment.End,
-//                verticalArrangement = Arrangement.Center,
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.AddCircle,
-//                    contentDescription = "Add Color",
-//                    tint = MaterialTheme.colorScheme.onSurface,
-//                    modifier = Modifier
-//                        .padding(top = 10.dp)
-//                        .clickable {
-//
-//                        }
-//                )
-//            }
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        ) {
+            Text(stringResource(Res.string.enable_weight), modifier = Modifier.weight(1f))
+            Switch(
+                checked = enableWeight,
+                onCheckedChange = { enableWeight = it }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = enableWeight,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IntTextField(
+                        label = stringResource(Res.string.min),
+                        value = minWeight,
+                        allowRange = 0 until maxWeight.coerceAtLeast(0),
+                        onValueChange = { minWeight = it!! },
+                        modifier = Modifier.weight(1f)
+                    )
+                    IntTextField(
+                        label = stringResource(Res.string.max),
+                        value = maxWeight,
+                        allowRange = (minWeight + 1)..Int.MAX_VALUE,
+                        onValueChange = { maxWeight = it!! },
+                        modifier = Modifier.weight(1f)
+                    )
+                    IntTextField(
+                        label = stringResource(Res.string.step),
+                        value = weightStep,
+                        allowRange = 1..Int.MAX_VALUE,
+                        onValueChange = { weightStep = it!! },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
         }
     }
 }

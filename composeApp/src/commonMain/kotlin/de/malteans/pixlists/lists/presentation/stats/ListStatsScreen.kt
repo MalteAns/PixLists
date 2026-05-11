@@ -19,6 +19,7 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastRoundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.malteans.pixlists.core.domain.PixEntry
 import de.malteans.pixlists.core.presentation.components.CustomDialog
 import de.malteans.pixlists.core.presentation.components.FadeForScrollList
 import de.malteans.pixlists.core.presentation.util.ColumnChart
@@ -200,7 +201,7 @@ fun ListStatsScreen(
                         )
                 ) {
                     PixCellCanvas(
-                        categories = listOf(category),
+                        entries = listOf(PixEntry(category)),
                         animation = false
                     )
                     Text(
