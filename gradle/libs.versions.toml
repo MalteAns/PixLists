@@ -18,14 +18,14 @@ kotlinxDatetime = "0.8.0-0.6.x-compat"
 androidx-activityCompose = "1.11.0"
 androidx-lifecycle = "2.10.0"
 
-compose-multiplatform = "1.10.3"
+compose-multiplatform = "1.11.0"
 navigationCompose = "2.9.2"
 material3 = "1.9.0"
 materialIconsExtended = "1.7.3"
 
 koin = "4.2.1"
 
-ksp = "2.3.7"
+ksp = "2.3.8"
 sqlite = "2.6.1"
 room = "2.8.3"
 
