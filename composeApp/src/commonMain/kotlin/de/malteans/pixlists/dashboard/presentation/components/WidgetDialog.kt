@@ -3,7 +3,13 @@ package de.malteans.pixlists.dashboard.presentation.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -11,11 +17,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Text
+import androidx.compose.material3.TriStateCheckbox
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import de.malteans.pixlists.core.domain.PixList
 import de.malteans.pixlists.core.presentation.components.CustomDialog
@@ -27,7 +49,18 @@ import de.malteans.pixlists.dashboard.domain.WidgetType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import pixlists.composeapp.generated.resources.*
+import pixlists.composeapp.generated.resources.Res
+import pixlists.composeapp.generated.resources.add_widget
+import pixlists.composeapp.generated.resources.categories_select
+import pixlists.composeapp.generated.resources.column_chart
+import pixlists.composeapp.generated.resources.display_type
+import pixlists.composeapp.generated.resources.edit_widget
+import pixlists.composeapp.generated.resources.line_chart
+import pixlists.composeapp.generated.resources.no_categories_available
+import pixlists.composeapp.generated.resources.select_pixlist
+import pixlists.composeapp.generated.resources.select_pixlist_first
+import pixlists.composeapp.generated.resources.text
+import pixlists.composeapp.generated.resources.widget_type
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -161,10 +194,37 @@ fun WidgetDialog(
             Spacer(Modifier.height(16.dp))
 
             // Category selection
-            Text(
-                text = stringResource(Res.string.categories_select),
-                style = MaterialTheme.typography.titleMedium
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(Res.string.categories_select),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
+                if (categories.isNotEmpty()) {
+                    val triToggleState by remember(selectedCategoryIds, categories) {
+                        derivedStateOf {
+                            when {
+                                selectedCategoryIds.isEmpty() -> ToggleableState.Off
+                                selectedCategoryIds.size == categories.size -> ToggleableState.On
+                                else -> ToggleableState.Indeterminate
+                            }
+                        }
+                    }
+                    TriStateCheckbox(
+                        state = triToggleState,
+                        onClick = {
+                            selectedCategoryIds = if (triToggleState == ToggleableState.On) {
+                                emptyList()
+                            } else {
+                                categories.map { it.id }
+                            }
+                        }
+                    )
+                }
+            }
             if (categories.isEmpty()) {
                 Text(
                     text = if (selectedPixList != null) stringResource(Res.string.no_categories_available)

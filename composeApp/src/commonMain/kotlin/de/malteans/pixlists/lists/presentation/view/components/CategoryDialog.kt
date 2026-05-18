@@ -1,16 +1,29 @@
 package de.malteans.pixlists.lists.presentation.view.components
 
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -29,7 +42,17 @@ import de.malteans.pixlists.core.presentation.components.customIcons.FilledPixIc
 import de.malteans.pixlists.core.presentation.util.AnimatedDoubleIconButton
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
-import pixlists.composeapp.generated.resources.*
+import pixlists.composeapp.generated.resources.Res
+import pixlists.composeapp.generated.resources.add_category
+import pixlists.composeapp.generated.resources.color
+import pixlists.composeapp.generated.resources.edit_category
+import pixlists.composeapp.generated.resources.enable_weight
+import pixlists.composeapp.generated.resources.max
+import pixlists.composeapp.generated.resources.min
+import pixlists.composeapp.generated.resources.name
+import pixlists.composeapp.generated.resources.name_already_in_use
+import pixlists.composeapp.generated.resources.no_color
+import pixlists.composeapp.generated.resources.step
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -149,15 +172,12 @@ fun CategoryDialog(
             )
         },
     ) {
-        val invalid = invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (categoryToEdit?.name ?: "")
-        AnimatedVisibility(
-            visible = invalid,
-            enter = expandVertically(),
-            exit = shrinkVertically(),
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Row {
+        // Name selection -------------------------------------------------------------------------
+        val invalidName by remember(invalidNames, nameField.text, categoryToEdit) { derivedStateOf {
+            invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (categoryToEdit?.name ?: "")
+        } }
+        if (invalidName) {
+            Row(Modifier.fillMaxWidth()) {
                 Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = "Error",
@@ -173,59 +193,42 @@ fun CategoryDialog(
                 )
             }
         }
-        Row(
+        OutlinedTextField(
+            value = nameField,
+            onValueChange = { nameField = it.copy(text = it.text.replace("\n", " ")) },
+            singleLine = true,
+            label = { Text(stringResource(Res.string.name)) },
+            isError = invalidName,
             modifier = Modifier
+                .focusRequester(focusRequester)
                 .fillMaxWidth()
-                .padding(top = 0.dp, bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = nameField,
-                onValueChange = { nameField = it.copy(text = it.text.replace("\n", " ")) },
-                singleLine = true,
-                label = { Text(stringResource(Res.string.name)) },
-                isError = invalidNames.contains(nameField.text.trim()) && nameField.text.trim() != (categoryToEdit?.name ?: ""),
-                modifier = Modifier
-                    .focusRequester(focusRequester)
-                    .fillMaxWidth()
-            )
+        )
+        Spacer(Modifier.height(8.dp))
+        // Color selection ------------------------------------------------------------------------
+        val colorOptions by remember {
+            mutableStateOf(colors.sortedBy { it.name }.associateBy({ it }, { it.name }))
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp, bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-            ) {
-                Dropdown(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    options = colors.sortedBy { it.name }.associateBy({ it }, { it.name }),
-                    label = stringResource(Res.string.color),
-                    onValueChanged = { color = it },
-                    selectedOption = Pair(color, color?.name
-                        ?: stringResource(Res.string.no_color)),
-                    optionIcon = { color ->
-                        if (color != null) {
-                            Icon(
-                                imageVector = FilledPixIcon,
-                                contentDescription = "Color",
-                                tint = color.toColor(),
-                            )
-                        }
-                    },
-                )
-            }
-        }
-
+        Dropdown(
+            options = colorOptions,
+            label = stringResource(Res.string.color),
+            onValueChanged = { color = it },
+            selectedOption = Pair(color, color?.name ?: stringResource(Res.string.no_color)),
+            optionIcon = { color ->
+                if (color != null) {
+                    Icon(
+                        imageVector = FilledPixIcon,
+                        contentDescription = "Color",
+                        tint = color.toColor(),
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
         ) {
             Text(stringResource(Res.string.enable_weight), modifier = Modifier.weight(1f))
             Switch(
@@ -234,39 +237,33 @@ fun CategoryDialog(
             )
         }
 
-        AnimatedVisibility(
-            visible = enableWeight,
-            enter = expandVertically(),
-            exit = shrinkVertically(),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
+        if (enableWeight) {
+            Spacer(Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    IntTextField(
-                        label = stringResource(Res.string.min),
-                        value = minWeight,
-                        allowRange = 0 until maxWeight.coerceAtLeast(0),
-                        onValueChange = { minWeight = it!! },
-                        modifier = Modifier.weight(1f)
-                    )
-                    IntTextField(
-                        label = stringResource(Res.string.max),
-                        value = maxWeight,
-                        allowRange = (minWeight + 1)..Int.MAX_VALUE,
-                        onValueChange = { maxWeight = it!! },
-                        modifier = Modifier.weight(1f)
-                    )
-                    IntTextField(
-                        label = stringResource(Res.string.step),
-                        value = weightStep,
-                        allowRange = 1..Int.MAX_VALUE,
-                        onValueChange = { weightStep = it!! },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                IntTextField(
+                    label = stringResource(Res.string.min),
+                    value = minWeight,
+                    allowRange = 0 until maxWeight.coerceAtLeast(0),
+                    onValueChange = { minWeight = it!! },
+                    modifier = Modifier.weight(1f)
+                )
+                IntTextField(
+                    label = stringResource(Res.string.max),
+                    value = maxWeight,
+                    allowRange = (minWeight + 1)..Int.MAX_VALUE,
+                    onValueChange = { maxWeight = it!! },
+                    modifier = Modifier.weight(1f)
+                )
+                IntTextField(
+                    label = stringResource(Res.string.step),
+                    value = weightStep,
+                    allowRange = 1..Int.MAX_VALUE,
+                    onValueChange = { weightStep = it!! },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
