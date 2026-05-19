@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.AddBox
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.malteans.pixlists.core.presentation.components.CustomTopBar
+import de.malteans.pixlists.core.presentation.components.IconIconButton
 import de.malteans.pixlists.core.presentation.util.ObserveAsEvents
 import de.malteans.pixlists.dashboard.domain.WidgetData
 import de.malteans.pixlists.dashboard.domain.WidgetType
@@ -112,31 +114,36 @@ fun DashboardScreen(
                 openDrawer = { onAction(DashboardAction.OpenDrawer) },
                 actions = {
                     if (reorderMode) {
-                        IconButton({
-                            onAction(DashboardAction.UpdateWidgetOrder(reorderedWidgets.map { it.id }))
-                            reorderMode = false
-                            scrollAfterReorder = true
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = stringResource(Res.string.done)
-                            )
-                        }
+                        IconIconButton(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(Res.string.cancel),
+                            onClick = {
+                                reorderedWidgets = state.widgets
+                                reorderMode = false
+                            }
+                        )
+                        IconIconButton(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = stringResource(Res.string.done),
+                            onClick = {
+                                onAction(DashboardAction.UpdateWidgetOrder(reorderedWidgets.map { it.id }))
+                                reorderMode = false
+                                scrollAfterReorder = true
+                            }
+                        )
                     } else {
                         if (state.widgets.isNotEmpty()) {
-                            IconButton({ reorderMode = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = stringResource(Res.string.reorder_widgets),
-                                )
-                            }
-                        }
-                        IconButton({ addWidgetDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Outlined.AddBox,
-                                contentDescription = stringResource(Res.string.add_widget),
+                            IconIconButton(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(Res.string.reorder_widgets),
+                                onClick = { reorderMode = true }
                             )
                         }
+                        IconIconButton(
+                            imageVector = Icons.Outlined.AddBox,
+                            contentDescription = stringResource(Res.string.add_widget),
+                            onClick = { addWidgetDialog = true }
+                        )
                     }
                 }
             )
@@ -177,18 +184,15 @@ fun DashboardScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)
                             ) {
-                                IconButton(
+                                IconIconButton(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = stringResource(Res.string.delete),
+                                    iconColor = MaterialTheme.colorScheme.errorContainer,
                                     onClick = {
                                         onAction(DashboardAction.DeleteWidget(widget.id))
                                         reorderedWidgets = reorderedWidgets.filter { it.id != widget.id }
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = stringResource(Res.string.delete),
-                                        tint = MaterialTheme.colorScheme.errorContainer
-                                    )
-                                }
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = stringResource(widget.type.headingRes, widget.pixList.name),
@@ -263,15 +267,12 @@ fun DashboardScreen(
                                         style = MaterialTheme.typography.titleMedium,
                                         modifier = Modifier.weight(1f)
                                     )
-                                    IconButton(
-                                        onClick = { widgetToEdit = widget },
-                                        modifier = Modifier.size(24.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Settings,
-                                            contentDescription = stringResource(Res.string.edit_widget)
-                                        )
-                                    }
+                                    IconIconButton(
+                                        imageVector = Icons.Outlined.Settings,
+                                        contentDescription = stringResource(Res.string.edit_widget),
+                                        modifier = Modifier.size(24.dp),
+                                        onClick = { widgetToEdit = widget }
+                                    )
                                 }
                                 when {
                                     WidgetType.QUICK_ENTRY == widget.type -> QuickEntryWidget(
