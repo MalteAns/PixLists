@@ -28,7 +28,7 @@ dependencyResolutionManagement {
     }
 }
 
-include(":composeApp")
 include(":androidApp")
+include(":composeApp")
 include(":legal")
 include(":dataStore")

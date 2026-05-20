@@ -8,7 +8,7 @@ class PixApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        initKoin{
+        initKoin {
             androidContext(this@PixApplication)
         }
     }
