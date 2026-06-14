@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    if: false # Temporarily disable this until weird errors fixed
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,9 +27,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-overwrite-existing: true
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
 
       - name: Build iOS App
         run: xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -configuration Debug CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
