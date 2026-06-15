@@ -229,11 +229,16 @@ fun ColorDialog(
             value = selectedHexField,
             onValueChange = { newValue ->
                 val normalizedText = newValue.text.removePrefix("#")
+                val hashOffset = newValue.text.length - normalizedText.length
+                val normalizedSelection = TextRange(
+                    start = (newValue.selection.start - hashOffset).coerceIn(0, normalizedText.length),
+                    end = (newValue.selection.end - hashOffset).coerceIn(0, normalizedText.length),
+                )
                 if (normalizedText.length <= 6 &&
                         normalizedText.all { it.isDigit() || it.uppercaseChar() in 'A'..'F' }) {
                     selectedHexField = newValue.copy(
                         text = normalizedText,
-                        selection = TextRange(normalizedText.length),
+                        selection = normalizedSelection,
                     )
                 }
                 if (normalizedText.isValidHexColor()) {
