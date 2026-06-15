@@ -358,7 +358,7 @@ private fun String.hexToRgb(): List<Int> {
             green = normalizedHex[1].toString().toInt(16) * 17
             blue = normalizedHex[2].toString().toInt(16) * 17
         }
-        else -> throw IllegalArgumentException("Invalid hex color format. Expected 3 or 6 hex digits")
+        else -> throw IllegalArgumentException("Invalid hex color format. Expected 3 or 6 hex digits (without # prefix)")
     }
     return listOf(red, green, blue)
 }
