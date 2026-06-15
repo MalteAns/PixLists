@@ -228,11 +228,17 @@ fun ColorDialog(
         OutlinedTextField(
             value = selectedHexField,
             onValueChange = { newValue ->
-                if (newValue.text.length <= 6 &&
-                        newValue.text.all { it.isDigit() || it.uppercaseChar() in 'A'..'F' })
-                    selectedHexField = newValue
-                if (newValue.text.isValidHexColor())
-                    selectedRgbValues = newValue.text.hexToRgb()
+                val normalizedText = newValue.text.removePrefix("#")
+                if (normalizedText.length <= 6 &&
+                        normalizedText.all { it.isDigit() || it.uppercaseChar() in 'A'..'F' }) {
+                    selectedHexField = newValue.copy(
+                        text = normalizedText,
+                        selection = TextRange(normalizedText.length),
+                    )
+                }
+                if (normalizedText.isValidHexColor()) {
+                    selectedRgbValues = normalizedText.hexToRgb()
+                }
             },
             singleLine = true,
             label = { Text(stringResource(Res.string.color)) },
@@ -332,19 +338,20 @@ private fun String.isValidHexColor(): Boolean {
 private fun Int.toHex() = this.toString(16).uppercase().padStart(2, '0')
 
 private fun String.hexToRgb(): List<Int> {
+    val normalizedHex = this.removePrefix("#")
     var red: Int
     var green: Int
     var blue: Int
-    when (this.length) {
+    when (normalizedHex.length) {
         6 -> {
-            red = this.substring(0, 2).toInt(16)
-            green = this.substring(2, 4).toInt(16)
-            blue = this.substring(4, 6).toInt(16)
+            red = normalizedHex.substring(0, 2).toInt(16)
+            green = normalizedHex.substring(2, 4).toInt(16)
+            blue = normalizedHex.substring(4, 6).toInt(16)
         }
         3 -> {
-            red = this[0].toString().toInt(16) * 17
-            green = this[1].toString().toInt(16) * 17
-            blue = this[2].toString().toInt(16) * 17
+            red = normalizedHex[0].toString().toInt(16) * 17
+            green = normalizedHex[1].toString().toInt(16) * 17
+            blue = normalizedHex[2].toString().toInt(16) * 17
         }
         else -> throw IllegalArgumentException("String must be a valid hex color code. (length with # must be 4 or 7)")
     }
