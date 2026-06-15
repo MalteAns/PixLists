@@ -229,10 +229,10 @@ fun ColorDialog(
             value = selectedHexField,
             onValueChange = { newValue ->
                 val normalizedText = newValue.text.removePrefix("#")
-                val hashOffset = newValue.text.length - normalizedText.length
+                val prefixLength = newValue.text.length - normalizedText.length
                 val normalizedSelection = TextRange(
-                    start = (newValue.selection.start - hashOffset).coerceIn(0, normalizedText.length),
-                    end = (newValue.selection.end - hashOffset).coerceIn(0, normalizedText.length),
+                    start = (newValue.selection.start - prefixLength).coerceIn(0, normalizedText.length),
+                    end = (newValue.selection.end - prefixLength).coerceIn(0, normalizedText.length),
                 )
                 if (normalizedText.length <= 6 &&
                         normalizedText.all { it.isDigit() || it.uppercaseChar() in 'A'..'F' }) {
@@ -358,7 +358,7 @@ private fun String.hexToRgb(): List<Int> {
             green = normalizedHex[1].toString().toInt(16) * 17
             blue = normalizedHex[2].toString().toInt(16) * 17
         }
-        else -> throw IllegalArgumentException("Invalid hex color format. Expected 3 or 6 hex digits (optional # prefix)")
+        else -> throw IllegalArgumentException("Invalid hex color format. Expected 3 or 6 hex digits")
     }
     return listOf(red, green, blue)
 }
