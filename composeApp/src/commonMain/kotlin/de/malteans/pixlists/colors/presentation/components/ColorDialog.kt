@@ -228,11 +228,14 @@ fun ColorDialog(
         OutlinedTextField(
             value = selectedHexField,
             onValueChange = { newValue ->
-                if (newValue.text.length <= 6 &&
-                        newValue.text.all { it.isDigit() || it.uppercaseChar() in 'A'..'F' })
-                    selectedHexField = newValue
-                if (newValue.text.isValidHexColor())
-                    selectedRgbValues = newValue.text.hexToRgb()
+                // Sanitize input: keep only hex characters (0-9, A-F, a-f) and truncate to 6 chars
+                val sanitized = newValue.text.filter { it.isDigit() || it.uppercaseChar() in 'A'..'F' }.take(6)
+                selectedHexField = TextFieldValue(
+                    text = sanitized,
+                    selection = newValue.selection
+                )
+                if (sanitized.isValidHexColor())
+                    selectedRgbValues = sanitized.hexToRgb()
             },
             singleLine = true,
             label = { Text(stringResource(Res.string.color)) },
@@ -244,7 +247,11 @@ fun ColorDialog(
                     Icon(
                         imageVector = FilledPixIcon,
                         contentDescription = "Preview",
-                        tint = Color(red = tempRbgValues[0], green = tempRbgValues[1], blue = tempRbgValues[2]),
+                        tint = Color(
+                            red = tempRbgValues.getOrElse(0) { 0.0f },
+                            green = tempRbgValues.getOrElse(1) { 0.0f },
+                            blue = tempRbgValues.getOrElse(2) { 0.0f }
+                        ),
                     )
                 } else {
                     Icon(
@@ -325,28 +332,40 @@ fun ColorDialog(
 }
 
 private fun String.isValidHexColor(): Boolean {
-    val regex = Regex("^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")
-    return regex.matches(this)
+    // Only accept valid 3 or 6 character hex strings (without #)
+    return (this.length == 3 || this.length == 6) && this.all { it.isDigit() || it.uppercaseChar() in 'A'..'F' }
 }
 
 private fun Int.toHex() = this.toString(16).uppercase().padStart(2, '0')
 
 private fun String.hexToRgb(): List<Int> {
+    // Remove any # prefix if present (for safety)
+    val hexString = this.removePrefix("#")
+    
+    // Validate input: must be 3 or 6 hex characters
+    if (hexString.length !in listOf(3, 6) || !hexString.all { it.isDigit() || it.uppercaseChar() in 'A'..'F' }) {
+        // Return black as fallback for invalid input
+        return listOf(0, 0, 0)
+    }
+    
     var red: Int
     var green: Int
     var blue: Int
-    when (this.length) {
+    when (hexString.length) {
         6 -> {
-            red = this.substring(0, 2).toInt(16)
-            green = this.substring(2, 4).toInt(16)
-            blue = this.substring(4, 6).toInt(16)
+            red = hexString.substring(0, 2).toInt(16)
+            green = hexString.substring(2, 4).toInt(16)
+            blue = hexString.substring(4, 6).toInt(16)
         }
         3 -> {
-            red = this[0].toString().toInt(16) * 17
-            green = this[1].toString().toInt(16) * 17
-            blue = this[2].toString().toInt(16) * 17
+            red = hexString[0].toString().toInt(16) * 17
+            green = hexString[1].toString().toInt(16) * 17
+            blue = hexString[2].toString().toInt(16) * 17
         }
-        else -> throw IllegalArgumentException("String must be a valid hex color code. (length with # must be 4 or 7)")
+        else -> {
+            // This should never be reached due to validation above, but included for safety
+            return listOf(0, 0, 0)
+        }
     }
     return listOf(red, green, blue)
 }
@@ -357,9 +376,10 @@ private fun List<Int>.toFloatColorValues(): List<Float> {
 
 private fun List<Int>.toColor(): Color {
     val floatValues = this.toFloatColorValues()
+    // Ensure we have at least 3 elements, use 0.0f as fallback for missing components
     return Color(
-        red = floatValues[0],
-        green = floatValues[1],
-        blue = floatValues[2],
+        red = floatValues.getOrElse(0) { 0.0f },
+        green = floatValues.getOrElse(1) { 0.0f },
+        blue = floatValues.getOrElse(2) { 0.0f },
     )
 }
