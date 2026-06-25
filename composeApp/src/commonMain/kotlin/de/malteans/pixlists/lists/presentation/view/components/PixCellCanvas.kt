@@ -21,9 +21,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import de.malteans.pixlists.core.domain.PixCategory
+import de.malteans.pixlists.core.domain.PixColor
 import de.malteans.pixlists.core.domain.PixEntry
+import de.malteans.pixlists.core.presentation.theme.PixListsTheme
+import kotlin.math.sqrt
 
 @Composable
 fun PixCellCanvas(
@@ -94,7 +99,6 @@ fun PixCellCanvas(
         val ow = outlineWidth.toPx()
         val tdOw = todayOutlineWidth.toPx()
         val pad = contentPadding.toPx()
-        val gap = innerSpacing.toPx()
         val r = cornerRadius.toPx()
         val cellGap = cellSpacing.toPx()
 
@@ -144,106 +148,145 @@ fun PixCellCanvas(
             )
         }
 
-        when (entriesState.size.coerceAtMost(4)) {
-            0 -> {
-                // EMPTY → outline on CONTENT rect so it matches the filled size
-                drawRoundRect(
-                    color = emptyOutline,
-                    style = Stroke(width = ow),
-                    topLeft = Offset(contentLeft, contentTop),
-                    size = Size(contentW, contentH),
-                    cornerRadius = CornerRadius(r, r)
-                )
-                drawTodayOutline()
-            }
-
-            1 -> {
-                drawRoundRect(
-                    color = colorOf(0),
-                    topLeft = Offset(contentLeft, contentTop),
-                    size = Size(contentW, contentH),
-                    cornerRadius = CornerRadius(r, r)
-                )
-                drawTodayOutline()
-            }
-
-            2 -> {
-                clipPath(Path().apply { addRoundRect(contentRoundRect) }) {
-                    val tileW = (contentW - gap) / 2f
-                    val tileH = contentH
-                    // left
-                    drawRect(
-                        color = colorOf(0),
-                        topLeft = Offset(contentLeft, contentTop),
-                        size = Size(tileW.coerceAtLeast(0f), tileH)
-                    )
-                    // right
-                    drawRect(
-                        color = colorOf(1),
-                        topLeft = Offset(contentRight - tileW, contentTop),
-                        size = Size(tileW.coerceAtLeast(0f), tileH)
+        if (entriesState.isEmpty()) {
+            // EMPTY → outline on CONTENT rect so it matches the filled size
+            drawRoundRect(
+                color = emptyOutline,
+                style = Stroke(width = ow),
+                topLeft = Offset(contentLeft, contentTop),
+                size = Size(contentW, contentH),
+                cornerRadius = CornerRadius(r, r)
+            )
+            drawTodayOutline()
+        } else {
+            // Draw pizza slices - equal distribution for all categories
+            clipPath(Path().apply { addRoundRect(contentRoundRect) }) {
+                val centerX = contentLeft + contentW / 2f
+                val centerY = contentTop + contentH / 2f
+                // Use the diagonal as radius to reach the corners of the square
+                val radius = sqrt(contentW * contentW + contentH * contentH) / 2f
+                
+                val sliceAngle = 360f / entriesState.size
+                
+                entriesState.forEachIndexed { index, _ ->
+                    val startAngle = index * sliceAngle - 90f  // Start from top (12 o'clock)
+                    val sweepAngle = sliceAngle
+                    
+                    // Draw pie slice with bounding box centered and large enough to reach corners
+                    drawArc(
+                        color = colorOf(index),
+                        startAngle = startAngle,
+                        sweepAngle = sweepAngle,
+                        useCenter = true,
+                        topLeft = Offset(centerX - radius, centerY - radius),
+                        size = Size(radius * 2, radius * 2)
                     )
                 }
-                drawTodayOutline()
             }
-
-            3 -> {
-                clipPath(Path().apply { addRoundRect(contentRoundRect) }) {
-                    val rowH = (contentH - gap) / 2f
-                    val colW = (contentW - gap) / 2f
-                    // TL
-                    drawRect(
-                        color = colorOf(0),
-                        topLeft = Offset(contentLeft, contentTop),
-                        size = Size(colW.coerceAtLeast(0f), rowH.coerceAtLeast(0f))
-                    )
-                    // TR
-                    drawRect(
-                        color = colorOf(1),
-                        topLeft = Offset(contentRight - colW, contentTop),
-                        size = Size(colW.coerceAtLeast(0f), rowH.coerceAtLeast(0f))
-                    )
-                    // bottom full
-                    drawRect(
-                        color = colorOf(2),
-                        topLeft = Offset(contentLeft, contentBottom - rowH),
-                        size = Size(contentW, rowH.coerceAtLeast(0f))
-                    )
-                }
-                drawTodayOutline()
-            }
-
-            else -> {
-                clipPath(Path().apply { addRoundRect(contentRoundRect) }) {
-                    val tileW = (contentW - gap) / 2f
-                    val tileH = (contentH - gap) / 2f
-                    // TL
-                    drawRect(
-                        color = colorOf(0),
-                        topLeft = Offset(contentLeft, contentTop),
-                        size = Size(tileW.coerceAtLeast(0f), tileH.coerceAtLeast(0f))
-                    )
-                    // TR
-                    drawRect(
-                        color = colorOf(1),
-                        topLeft = Offset(contentRight - tileW, contentTop),
-                        size = Size(tileW.coerceAtLeast(0f), tileH.coerceAtLeast(0f))
-                    )
-                    // BL
-                    drawRect(
-                        color = colorOf(2),
-                        topLeft = Offset(contentLeft, contentBottom - tileH),
-                        size = Size(tileW.coerceAtLeast(0f), tileH.coerceAtLeast(0f))
-                    )
-                    // BR
-                    drawRect(
-                        color = colorOf(3),
-                        topLeft = Offset(contentRight - tileW, contentBottom - tileH),
-                        size = Size(tileW.coerceAtLeast(0f), tileH.coerceAtLeast(0f))
-                    )
-                }
-                drawTodayOutline()
-            }
+            drawTodayOutline()
         }
+    }
+}
+
+// Preview helpers
+
+private val previewColors = listOf(
+    PixColor(id = 1L, name = "Red", red = 1f, green = 0.3f, blue = 0.3f),
+    PixColor(id = 2L, name = "Green", red = 0.3f, green = 1f, blue = 0.3f),
+    PixColor(id = 3L, name = "Blue", red = 0.3f, green = 0.3f, blue = 1f),
+    PixColor(id = 4L, name = "Yellow", red = 1f, green = 1f, blue = 0.3f),
+    PixColor(id = 5L, name = "Magenta", red = 1f, green = 0.3f, blue = 1f),
+    PixColor(id = 6L, name = "Cyan", red = 0.3f, green = 1f, blue = 1f),
+)
+
+private fun createPreviewEntries(count: Int): List<PixEntry> {
+    return (0 until count).map { index ->
+        PixEntry(
+            category = PixCategory(
+                id = index.toLong(),
+                listId = 1L,
+                color = previewColors.getOrNull(index) ?: previewColors[0],
+                name = "Category ${index + 1}",
+            )
+        )
+    }
+}
+
+// Previews
+
+@Preview
+@Composable
+fun PixCellCanvasPreview0Entries() {
+    PixListsTheme {
+        PixCellCanvas(
+            entries = emptyList(),
+            animation = false,
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PixCellCanvasPreview1Entry() {
+    PixListsTheme {
+        PixCellCanvas(
+            entries = createPreviewEntries(1),
+            animation = false,
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PixCellCanvasPreview2Entries() {
+    PixListsTheme {
+        PixCellCanvas(
+            entries = createPreviewEntries(2),
+            animation = false,
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PixCellCanvasPreview3Entries() {
+    PixListsTheme {
+        PixCellCanvas(
+            entries = createPreviewEntries(3),
+            animation = false,
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PixCellCanvasPreview4Entries() {
+    PixListsTheme {
+        PixCellCanvas(
+            entries = createPreviewEntries(4),
+            animation = false,
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PixCellCanvasPreview5Entries() {
+    PixListsTheme {
+        PixCellCanvas(
+            entries = createPreviewEntries(5),
+            animation = false,
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PixCellCanvasPreview6Entries() {
+    PixListsTheme {
+        PixCellCanvas(
+            entries = createPreviewEntries(6),
+            animation = false,
+        )
     }
 }
