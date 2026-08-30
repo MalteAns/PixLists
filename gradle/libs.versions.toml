@@ -30,7 +30,7 @@ ksp = "2.3.11"
 sqlite = "2.6.1"
 room = "2.8.3"
 
-datastore = "1.1.7"
+datastore = "1.2.1"
 
 aboutLibraries = "15.0.4"
 
@@ -106,10 +106,10 @@ androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library",
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-
+# Room
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
-
+# About Libraries
 aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
 
 [bundles]
