@@ -1,5 +1,5 @@
 [versions]
-agp = "9.2.1"
+agp = "9.3.2"
 
 android-compileSdk = "37"
 android-minSdk = "30"
@@ -15,9 +15,9 @@ kotlinStdlib = "2.4.10"
 kotlinSerialization = "1.11.0"
 kotlinxDatetime = "0.8.0-0.6.x-compat"
 
-androidx-activityCompose = "1.13.0"
+androidx-activityCompose = "1.11.0"
 androidx-lifecycle = "2.11.0"
-coreKtx = "1.19.0"
+coreKtx = "1.18.0"
 
 composeMultiplatform = "1.11.1"
 navigationCompose = "2.9.2"
@@ -26,15 +26,15 @@ materialIconsExtended = "1.7.3"
 
 koin = "4.2.2"
 
-ksp = "2.3.10"
-sqlite = "2.7.0"
-room = "2.8.4"
+ksp = "2.3.11"
+sqlite = "2.6.1"
+room = "2.8.3"
 
 datastore = "1.2.1"
 
 aboutLibraries = "15.0.4"
 
-filekit = "0.14.2"
+filekit = "0.15.0"
 reorderable = "3.1.0"
 vico = "3.2.3"
 
