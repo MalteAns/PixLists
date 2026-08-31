@@ -19,7 +19,7 @@ androidx-activityCompose = "1.11.0"
 androidx-lifecycle = "2.11.0"
 coreKtx = "1.18.0"
 
-composeMultiplatform = "1.11.1"
+composeMultiplatform = "1.12.0"
 navigationCompose = "2.9.2"
 material3 = "1.9.0"
 materialIconsExtended = "1.7.3"
@@ -32,11 +32,11 @@ room = "2.8.3"
 
 datastore = "1.2.1"
 
-aboutLibraries = "15.0.4"
+aboutLibraries = "15.1.1"
 
 filekit = "0.15.0"
 reorderable = "3.1.0"
-vico = "3.2.3"
+vico = "3.3.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
